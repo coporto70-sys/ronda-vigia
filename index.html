@@ -971,6 +971,8 @@ async function motorQR() {
    quedan en este equipo. La clave "anon" está pensada para vivir en el
    navegador: lo que protege los datos son las reglas del servidor, no
    esconder esta clave. */
+const APP_VERSION = "2026-09-09-a";      /* sube esto en cada publicación */
+const SRV_LIB_MIN = 200000;              /* la biblioteca correcta pesa ~213 KB; la vieja, ~134 KB */
 const SRV_K = "ronda_vigia_servidor";
 const SRV_LIB = "supabase.js";
 const DOMINIO_USUARIOS = "@rondavigia.app";
@@ -1036,6 +1038,23 @@ async function srvDiagnostico() {
   paso("Forma de la clave", !truncada && !k.startsWith("sb_secret_"),
        prefijo + " · " + k.length + " caracteres" +
        (truncada ? " — parece cortada, usa el botón « Copy API key » en vez de seleccionar el texto" : ""));
+
+  paso("Versión de la app", true, APP_VERSION);
+
+  /* ¿Está corriendo la biblioteca nueva o quedó la vieja en la caché?
+     La vieja no entiende las claves sb_publishable_ y da errores engañosos. */
+  try {
+    const resp = await fetch(SRV_LIB + "?v=" + APP_VERSION, { cache: "no-store" });
+    const txt = await resp.text();
+    const nueva = txt.length >= SRV_LIB_MIN;
+    paso("Biblioteca actualizada", nueva,
+      Math.round(txt.length / 1024) + " KB — " + (nueva
+        ? "correcta"
+        : "es la versión antigua, guardada en la caché. Pulsa « Forzar actualización » aquí abajo."));
+    if (!nueva) return out;
+  } catch (e) {
+    paso("Biblioteca actualizada", false, detalleError(e));
+  }
 
   let sb;
   try {
@@ -1755,6 +1774,23 @@ function renderConfig() {
   };
   const so = $("#srvOlvidar");
   if (so) so.onclick = () => { srvOlvidar(); render(); avisar("Servidor desconectado de este equipo."); };
+
+  /* Salida de emergencia cuando el teléfono se queda con una copia vieja.
+     No toca los datos: sólo borra la caché de archivos y recarga. */
+  $("#srvRefrescar").onclick = async () => {
+    avisar("Descargando la app de nuevo…");
+    try {
+      if ("caches" in window) {
+        const ns = await caches.keys();
+        await Promise.all(ns.map(n => caches.delete(n)));
+      }
+      if (navigator.serviceWorker) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+    } catch (e) { /* seguimos y recargamos igual */ }
+    location.reload(true);
+  };
   const sr = $("#srvRegistrar"); if (sr) sr.onclick = () => dlgCuentaServidor("registrar");
   const se = $("#srvEntrar"); if (se) se.onclick = () => dlgCuentaServidor("entrar");
   const ss = $("#srvSalir");
@@ -1843,7 +1879,9 @@ function panelServidor() {
     '<div class="row" style="margin-top:14px;gap:9px">' +
       '<div style="flex:0 0 auto"><button class="btn btn-navy" id="srvProbar">Guardar y probar</button></div>' +
       (c ? '<div style="flex:0 0 auto"><button class="btn" id="srvOlvidar">Desconectar</button></div>' : "") +
+      '<div style="flex:0 0 auto"><button class="btn" id="srvRefrescar" title="Borra la copia guardada y descarga la app de nuevo">Forzar actualización</button></div>' +
     "</div>" +
+    '<p class="hint" style="margin:8px 0 0">Versión instalada: <b class="mono">' + APP_VERSION + "</b></p>" +
     (s.chequeos.length
       ? '<div style="margin-top:16px"><div class="eyebrow" style="margin-bottom:8px">Diagnóstico</div>' +
         '<div style="display:flex;flex-direction:column;gap:5px">' + s.chequeos.map(x => {
