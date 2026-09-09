@@ -2,7 +2,7 @@
    Guarda la app en el dispositivo para que abra sin señal, que es lo normal
    en un cerco perimetral o una sala de máquinas.
    Al publicar una versión nueva, sube el número de CACHE. */
-const CACHE = "ronda-vigia-v3";
+const CACHE = "ronda-vigia-v4";
 
 const ARCHIVOS = [
   "./",
@@ -15,7 +15,9 @@ const ARCHIVOS = [
   /* lector y generador de códigos QR: van alojados aquí para funcionar sin señal */
   "./qrcode.min.js",
   "./qr-scanner.umd.min.js",
-  "./qr-scanner-worker.min.js"
+  "./qr-scanner-worker.min.js",
+  /* cliente del servidor */
+  "./supabase.js"
 ];
 
 self.addEventListener("install", e => {

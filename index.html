@@ -254,6 +254,10 @@ dialog::backdrop{background:rgba(10,16,22,.55)}
 .pick{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2)}
 .pick input[type="number"]{width:80px;flex:none}
 .pick select{flex:1;min-width:0;font-size:14px}
+.pick .nm{flex:1;min-width:0;font-size:14px;overflow-wrap:anywhere}
+.pick .nm small{display:block;margin-top:2px;color:var(--muted);font-size:12px;line-height:1.45;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;overflow-wrap:anywhere}
+.pick{align-items:flex-start}
 .pick .ord{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;
   font-weight:600;background:var(--navy);color:var(--on-navy);font-variant-numeric:tabular-nums}
 .pick .x{flex:none;padding:5px 10px;font-size:16px;line-height:1;color:var(--bad);border-color:var(--bad-line)}
@@ -962,6 +966,186 @@ async function motorQR() {
   } };
 }
 
+/* ================= SERVIDOR (Supabase) =================
+   La dirección y la clave pública las pega el administrador en la app y
+   quedan en este equipo. La clave "anon" está pensada para vivir en el
+   navegador: lo que protege los datos son las reglas del servidor, no
+   esconder esta clave. */
+const SRV_K = "ronda_vigia_servidor";
+const SRV_LIB = "supabase.js";
+const DOMINIO_USUARIOS = "@rondavigia.app";
+let SB = null;
+
+state.srv = { probando: false, chequeos: [], perfil: null, sesion: null };
+
+const correoDe = u => normUsuario(u) + DOMINIO_USUARIOS;
+
+function srvConfig() {
+  try { return JSON.parse(localStorage.getItem(SRV_K)) || null; } catch (e) { return null; }
+}
+function srvGuardarConfig(url, clave) {
+  try { localStorage.setItem(SRV_K, JSON.stringify({ url: url.replace(/\/+$/, ""), clave })); } catch (e) {}
+  SB = null;
+}
+function srvOlvidar() {
+  try { localStorage.removeItem(SRV_K); } catch (e) {}
+  SB = null;
+  state.srv = { probando: false, chequeos: [], perfil: null, sesion: null };
+}
+
+async function srvCliente() {
+  const c = srvConfig();
+  if (!c || !c.url || !c.clave) return null;
+  if (SB) return SB;
+  await cargarScript(SRV_LIB);
+  if (!window.supabase || !window.supabase.createClient) throw new Error("No se pudo cargar la biblioteca del servidor.");
+  SB = window.supabase.createClient(c.url, c.clave, {
+    auth: { persistSession: true, autoRefreshToken: true, storageKey: "rv_auth" }
+  });
+  return SB;
+}
+
+/* Los errores de PostgREST a veces llegan con message vacío; se arma un
+   detalle con lo que haya para no dejar una fila roja sin explicación. */
+function detalleError(e) {
+  if (!e) return "error sin descripción";
+  const partes = [e.code, e.message, e.details, e.hint].filter(x => x && String(x).trim());
+  if (partes.length) return partes.join(" · ");
+  try { return JSON.stringify(e).slice(0, 160); } catch (x) { return String(e); }
+}
+const errorDeClave = e => /Invalid Compact JWS|Invalid API key|JWSError|JWT|apikey/i.test(detalleError(e));
+
+/* Cada comprobación devuelve {nombre, ok, detalle}. ok === null es informativo:
+   ni bien ni mal, sólo estado. */
+async function srvDiagnostico() {
+  const out = [];
+  const paso = (nombre, ok, detalle) => { out.push({ nombre, ok, detalle: detalle || "" }); return ok; };
+
+  const c = srvConfig();
+  if (!c) { paso("Configuración", false, "Falta la dirección o la clave."); return out; }
+  paso("Configuración", true, c.url);
+
+  let sb;
+  try {
+    sb = await srvCliente();
+    paso("Biblioteca del servidor", true, "cargada");
+  } catch (e) {
+    paso("Biblioteca del servidor", false, e.message);
+    return out;
+  }
+
+  /* Antes que nada: ¿sirve la clave? Si no, no tiene sentido seguir
+     llenando la pantalla de rojos que dicen todos lo mismo. */
+  try {
+    const { error } = await sb.from("perfiles").select("id").limit(1);
+    if (error && errorDeClave(error)) {
+      paso("Clave pública", false,
+        "El servidor rechaza la clave. Copia de nuevo la clave « anon / publishable » desde Project Settings → API Keys.");
+      return out;
+    }
+    if (error && /does not exist|schema cache/i.test(detalleError(error))) {
+      paso("Clave pública", true, "aceptada");
+      paso("Tablas", false, "Faltan las tablas. Ejecuta el guion supabase-esquema.sql en el SQL Editor.");
+      return out;
+    }
+    paso("Clave pública", true, "aceptada");
+  } catch (e) {
+    paso("Clave pública", false, detalleError(e));
+    return out;
+  }
+
+  /* Sesión: sin ella no es un fallo, sólo todavía no te has registrado. */
+  let usuario = null;
+  try {
+    const { data } = await sb.auth.getSession();
+    usuario = data && data.session ? data.session.user : null;
+  } catch (e) { /* sin sesión */ }
+  paso("Sesión en el servidor", usuario ? true : null,
+       usuario ? usuario.email : "todavía sin sesión — usa « Crear mi cuenta » aquí abajo");
+  state.srv.sesion = usuario;
+
+  /* Tablas: si no existe, PostgREST lo dice. Si existe pero las reglas no
+     dejan ver nada, devuelve vacío sin error, que también es correcto. */
+  for (const t of ["instalaciones", "puntos", "rutas", "rondas", "perfiles", "accesos"]) {
+    try {
+      const { error } = await sb.from(t).select("id").limit(1);
+      if (error) paso("Tabla " + t, false, detalleError(error));
+      else paso("Tabla " + t, true, "existe y responde");
+    } catch (e) {
+      paso("Tabla " + t, false, detalleError(e));
+    }
+  }
+
+  /* Perfil y rol */
+  if (usuario) {
+    try {
+      const { data, error } = await sb.from("perfiles").select("*").eq("id", usuario.id).maybeSingle();
+      if (error) paso("Tu perfil", false, error.message);
+      else if (!data) paso("Tu perfil", false, "no se creó el perfil (revisa el disparador del guion)");
+      else {
+        state.srv.perfil = data;
+        const esAdm = data.rol === "admin";
+        paso("Tu rol", esAdm, data.rol === "pendiente"
+          ? "pendiente — ejecuta el apartado 7 del guion para hacerte administrador"
+          : data.rol);
+      }
+    } catch (e) { paso("Tu perfil", false, e.message); }
+  }
+
+  /* Almacenamiento de fotos */
+  try {
+    const { error } = await sb.storage.from("fotos").list("", { limit: 1 });
+    if (error) paso("Almacén de fotos", false, detalleError(error));
+    else paso("Almacén de fotos", true, "bucket accesible");
+  } catch (e) {
+    paso("Almacén de fotos", false, detalleError(e));
+  }
+
+  return out;
+}
+
+async function srvRegistrar(nombre, usuario, clave) {
+  const sb = await srvCliente();
+  if (!sb) throw new Error("Falta configurar el servidor.");
+  const { data, error } = await sb.auth.signUp({
+    email: correoDe(usuario), password: clave,
+    options: { data: { nombre, usuario: normUsuario(usuario) } }
+  });
+  if (error) throw new Error(traducirErrorSrv(error.message));
+  if (!data.session) {
+    /* Con la confirmación por correo apagada esto no debería pasar. */
+    throw new Error("La cuenta se creó pero el servidor no inició sesión. Revisa que « Confirm email » esté apagado.");
+  }
+  return data.user;
+}
+
+async function srvEntrar(usuario, clave) {
+  const sb = await srvCliente();
+  if (!sb) throw new Error("Falta configurar el servidor.");
+  const { data, error } = await sb.auth.signInWithPassword({ email: correoDe(usuario), password: clave });
+  if (error) throw new Error(traducirErrorSrv(error.message));
+  return data.user;
+}
+
+async function srvSalir() {
+  const sb = await srvCliente();
+  if (sb) await sb.auth.signOut();
+  state.srv.sesion = null;
+  state.srv.perfil = null;
+}
+
+function traducirErrorSrv(m) {
+  const s = String(m || "");
+  if (/Invalid login credentials/i.test(s)) return "Usuario o clave incorrectos.";
+  if (/already registered|already been registered/i.test(s)) return "Ese usuario ya está registrado.";
+  if (/Password should be at least/i.test(s)) return "La clave es demasiado corta (mínimo 6 caracteres).";
+  if (/Email address .* is invalid/i.test(s)) return "El usuario sólo puede llevar letras, números, punto o guion.";
+  if (/Signups not allowed/i.test(s)) return "El servidor tiene el registro desactivado (Allow new users to sign up).";
+  if (/Failed to fetch|NetworkError/i.test(s)) return "No se llega al servidor. Revisa la dirección y tu conexión.";
+  if (/Invalid API key|JWT/i.test(s)) return "La clave pública no es válida para este proyecto.";
+  return s;
+}
+
 /* ---------------- avisos ---------------- */
 let toastT = null;
 function avisar(msg, tipo) {
@@ -1535,6 +1719,7 @@ function renderConfig() {
       "</div>" +
       '<p class="hint" id="espacio" style="margin:12px 0 0">Calculando espacio usado…</p>' +
       "</div></div>" +
+    panelServidor() +
     '<div class="cfg-grid">' +
       panelInstalaciones() + panelUsuarios() +
     "</div>" +
@@ -1544,6 +1729,23 @@ function renderConfig() {
 
   const be = $("#btnEditInst"); if (be) be.onclick = () => dlgInstalacion(instalacionActual());
   const sd = $("#btnSeed"); if (sd) sd.onclick = sembrar;
+
+  $("#srvProbar").onclick = async () => {
+    const url = $("#srvUrl").value.trim();
+    const clave = $("#srvKey").value.trim();
+    if (!url || !clave) { avisar("Pega la dirección y la clave pública.", "bad"); return; }
+    if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(url)) {
+      avisar("La dirección debe ser como https://xxxx.supabase.co", "bad"); return;
+    }
+    srvGuardarConfig(url, clave);
+    await correrDiagnostico();
+  };
+  const so = $("#srvOlvidar");
+  if (so) so.onclick = () => { srvOlvidar(); render(); avisar("Servidor desconectado de este equipo."); };
+  const sr = $("#srvRegistrar"); if (sr) sr.onclick = () => dlgCuentaServidor("registrar");
+  const se = $("#srvEntrar"); if (se) se.onclick = () => dlgCuentaServidor("entrar");
+  const ss = $("#srvSalir");
+  if (ss) ss.onclick = async () => { await srvSalir(); render(); avisar("Sesión del servidor cerrada."); };
   $("#btnBackup").onclick = respaldar;
   $("#btnRestore").onclick = () => $("#fileRestore").click();
   $("#fileRestore").onchange = e => { const f = e.target.files[0]; if (f) dlgRestaurar(f); e.target.value = ""; };
@@ -1607,6 +1809,97 @@ async function dlgEtiquetas() {
     $("#etqVolver").onclick = () => { v.innerHTML = previo; render(); };
     window.scrollTo(0, 0);
     avisar(activos.length + " etiquetas generadas.", "hv");
+  };
+}
+
+function panelServidor() {
+  const c = srvConfig();
+  const s = state.srv;
+  const chip = s.sesion
+    ? '<span class="chip ok">Sesión iniciada</span>'
+    : (c ? '<span class="chip warn">Configurado, sin sesión</span>' : '<span class="chip">Sin configurar</span>');
+
+  return '<div class="panel"><div class="panel-hd"><h2>Servidor en línea</h2>' + chip + "</div><div class=\"panel-bd\">" +
+    '<p class="hint" style="margin:0 0 14px">Conecta la app a tu proyecto de Supabase para que las rondas y las fotos ' +
+      "lleguen a un solo lugar y las veas en vivo. La clave pública se queda en este equipo; puedes pegarla sin problema, " +
+      "es la que va en el navegador por diseño.</p>" +
+    '<label class="f">Dirección del proyecto<input id="srvUrl" class="mono" spellcheck="false" placeholder="https://xxxx.supabase.co" value="' + esc(c ? c.url : "") + '"></label>' +
+    '<label class="f" style="margin-top:12px">Clave pública (anon / publishable)<input id="srvKey" class="mono" spellcheck="false" type="password" value="' + esc(c ? c.clave : "") + '"></label>' +
+    '<p class="hint" style="margin:7px 0 0">La encuentras en tu proyecto, en <b>Project Settings → API Keys</b>. ' +
+      "Es la que dice <b>anon</b> o <b>publishable</b>, nunca la <b>service_role</b>.</p>" +
+    '<div class="row" style="margin-top:14px;gap:9px">' +
+      '<div style="flex:0 0 auto"><button class="btn btn-navy" id="srvProbar">Guardar y probar</button></div>' +
+      (c ? '<div style="flex:0 0 auto"><button class="btn" id="srvOlvidar">Desconectar</button></div>' : "") +
+    "</div>" +
+    (s.chequeos.length
+      ? '<div style="margin-top:16px"><div class="eyebrow" style="margin-bottom:8px">Diagnóstico</div>' +
+        '<div style="display:flex;flex-direction:column;gap:5px">' + s.chequeos.map(x => {
+          const fondo = x.ok === null ? "var(--surface-2)" : (x.ok ? "var(--ok-bg)" : "var(--bad-bg)");
+          const borde = x.ok === null ? "var(--line-strong)" : (x.ok ? "var(--ok-line)" : "var(--bad-line)");
+          const tinta = x.ok === null ? "var(--muted)" : (x.ok ? "var(--ok)" : "var(--bad)");
+          const icono = x.ok === null ? "–" : (x.ok ? "✓" : "✕");
+          return '<div class="pick" style="gap:9px;background:' + fondo + ';border-color:' + borde + '">' +
+            '<b style="flex:0 0 auto;color:' + tinta + '">' + icono + "</b>" +
+            '<span class="nm"><b>' + esc(x.nombre) + "</b>" +
+            (x.detalle ? "<small>" + esc(x.detalle) + "</small>" : "") + "</span></div>";
+        }).join("") +
+        "</div></div>"
+      : "") +
+    (c ? '<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">' +
+        '<div class="eyebrow" style="margin-bottom:8px">Tu cuenta en el servidor</div>' +
+        (s.sesion
+          ? '<p class="hint" style="margin:0 0 10px">Conectado como <b class="mono">' + esc(s.sesion.email) + "</b>" +
+            (s.perfil ? " · rol <b>" + esc(s.perfil.rol) + "</b>" : "") + "</p>" +
+            '<button class="btn btn-sm" id="srvSalir">Cerrar sesión del servidor</button>'
+          : '<div class="row" style="gap:9px">' +
+              '<div style="flex:0 0 auto"><button class="btn btn-hv" id="srvRegistrar">Crear mi cuenta</button></div>' +
+              '<div style="flex:0 0 auto"><button class="btn" id="srvEntrar">Ya tengo cuenta</button></div></div>') +
+        "</div>" : "") +
+    "</div></div>";
+}
+
+async function correrDiagnostico() {
+  state.srv.probando = true;
+  avisar("Probando la conexión…");
+  try { state.srv.chequeos = await srvDiagnostico(); }
+  catch (e) { state.srv.chequeos = [{ nombre: "Error inesperado", ok: false, detalle: e.message }]; }
+  state.srv.probando = false;
+  render();
+  const malos = state.srv.chequeos.filter(x => x.ok === false).length;
+  avisar(malos ? malos + (malos === 1 ? " comprobación con problemas." : " comprobaciones con problemas.") : "Todo correcto.",
+         malos ? "bad" : "hv");
+}
+
+function dlgCuentaServidor(modo) {
+  const nuevo = modo === "registrar";
+  abrirDlg('<div class="dlg-hd"><h3>' + (nuevo ? "Crear mi cuenta en el servidor" : "Entrar al servidor") + "</h3></div>" +
+    '<div class="dlg-bd">' +
+      (nuevo ? '<p class="hint" style="margin:0">Se crea con rol <b>pendiente</b>: no verá nada hasta que un administrador le asigne rol e instalación. ' +
+        "Si eres tú el primero, después ejecuta el apartado 7 del guion SQL para darte el rol de administrador.</p>" : "") +
+      (nuevo ? '<label class="f">Nombre completo<input id="svN"></label>' : "") +
+      '<label class="f">Usuario<input id="svU" class="mono" autocapitalize="none" spellcheck="false" placeholder="haravena"></label>' +
+      '<label class="f">Clave<input id="svC" type="password" autocomplete="' + (nuevo ? "new-password" : "current-password") + '"></label>' +
+      (nuevo ? '<p class="hint" style="margin:0">Mínimo 6 caracteres.</p>' : "") +
+    "</div>" +
+    '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
+      '<button class="btn btn-navy" id="svOk">' + (nuevo ? "Crear cuenta" : "Entrar") + "</button></div>");
+
+  $("#svOk").onclick = async () => {
+    const u = $("#svU").value.trim();
+    const cl = $("#svC").value;
+    const nom = nuevo ? $("#svN").value.trim() : "";
+    if (!u || !cl || (nuevo && !nom)) { avisar("Completa todos los campos.", "bad"); return; }
+    $("#svOk").disabled = true;
+    try {
+      if (nuevo) await srvRegistrar(nom, u, cl);
+      else await srvEntrar(u, cl);
+      dlg.close();
+      avisar(nuevo ? "Cuenta creada en el servidor." : "Sesión iniciada en el servidor.", "hv");
+      await correrDiagnostico();
+    } catch (e) {
+      avisar(e.message, "bad");
+      $("#svOk").disabled = false;
+    }
   };
 }
 
