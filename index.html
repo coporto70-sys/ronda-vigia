@@ -971,7 +971,7 @@ async function motorQR() {
    quedan en este equipo. La clave "anon" estÃ¡ pensada para vivir en el
    navegador: lo que protege los datos son las reglas del servidor, no
    esconder esta clave. */
-const APP_VERSION = "2026-09-09-b";      /* sube esto en cada publicaciÃ³n */
+const APP_VERSION = "2026-09-09-c";      /* sube esto en cada publicaciÃ³n */
 const SRV_LIB_MIN = 200000;              /* la biblioteca correcta pesa ~213 KB; la vieja, ~134 KB */
 const SRV_K = "ronda_vigia_servidor";
 const SRV_LIB = "supabase.js";
@@ -1114,9 +1114,11 @@ async function srvDiagnostico() {
 
   /* Tablas: si no existe, PostgREST lo dice. Si existe pero las reglas no
      dejan ver nada, devuelve vacÃ­o sin error, que tambiÃ©n es correcto. */
+  /* select("*") y no select("id"): accesos no tiene columna id, su clave es
+     la pareja perfil+instalación. */
   for (const t of ["instalaciones", "puntos", "rutas", "rondas", "perfiles", "accesos"]) {
     try {
-      const { error } = await sb.from(t).select("id").limit(1);
+      const { error } = await sb.from(t).select("*").limit(1);
       if (error) paso("Tabla " + t, false, detalleError(error));
       else paso("Tabla " + t, true, "existe y responde");
     } catch (e) {
