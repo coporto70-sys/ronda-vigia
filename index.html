@@ -1025,6 +1025,18 @@ async function srvDiagnostico() {
   if (!c) { paso("Configuración", false, "Falta la dirección o la clave."); return out; }
   paso("Configuración", true, c.url);
 
+  /* Forma de la clave, sin mostrarla: casi todos los fallos son un pegado
+     incompleto o haberse traído la clave equivocada. */
+  const k = String(c.clave || "");
+  const prefijo = k.startsWith("sb_publishable_") ? "sb_publishable_ (formato nuevo)"
+                : k.startsWith("sb_secret_") ? "sb_secret_ — ¡es la clave SECRETA! usa la publishable"
+                : k.startsWith("eyJ") ? "eyJ… (formato antiguo)"
+                : "formato no reconocido";
+  const truncada = /[…]|\.\.\.$/.test(k) || k.length < 30;
+  paso("Forma de la clave", !truncada && !k.startsWith("sb_secret_"),
+       prefijo + " · " + k.length + " caracteres" +
+       (truncada ? " — parece cortada, usa el botón « Copy API key » en vez de seleccionar el texto" : ""));
+
   let sb;
   try {
     sb = await srvCliente();
@@ -1040,7 +1052,8 @@ async function srvDiagnostico() {
     const { error } = await sb.from("perfiles").select("id").limit(1);
     if (error && errorDeClave(error)) {
       paso("Clave pública", false,
-        "El servidor rechaza la clave. Copia de nuevo la clave « anon / publishable » desde Project Settings → API Keys.");
+        "El servidor rechaza la clave. Respuesta literal: « " + detalleError(error) +
+        " ». Vuelve a copiarla con el botón « Copy API key » en Project Settings → API Keys.");
       return out;
     }
     if (error && /does not exist|schema cache/i.test(detalleError(error))) {
