@@ -2,7 +2,7 @@
    Guarda la app en el dispositivo para que abra sin señal, que es lo normal
    en un cerco perimetral o una sala de máquinas.
    Al publicar una versión nueva, sube el número de CACHE. */
-const CACHE = "ronda-vigia-v6";
+const CACHE = "ronda-vigia-v7";
 
 const ARCHIVOS = [
   "./",
