@@ -1,0 +1,1388 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Terminal de marcacion de puntos de control, bitacora y reportes de cumplimiento para rondas de vigilancia.">
+<meta name="theme-color" content="#1B2E45">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ronda Vigia">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{color-scheme:light dark}
+body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif;background:#EAEDF1}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body><title>Ronda Vigía</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#EAEDF1; --surface:#FFFFFF; --surface-2:#F4F6F9; --surface-3:#E7EBF0;
+  --ink:#141B23; --ink-2:#3E4A57; --muted:#6B7887;
+  --line:#D3D9E0; --line-strong:#B4BEC9;
+  --navy:#1B2E45; --navy-2:#24405E; --on-navy:#E9EEF4;
+  --hv:#E3C400; --on-hv:#17190C; --hv-soft:#FAF2C2; --hv-line:#C9AD00;
+  --ok:#12674A; --ok-bg:#DCEFE6; --ok-line:#9CCDB8;
+  --warn:#8A5600; --warn-bg:#F7E9CD; --warn-line:#DDBE83;
+  --bad:#A02A1F; --bad-bg:#F8DFDC; --bad-line:#E3AEA7;
+  --chart:#2C4F73; --chart-soft:#CBD8E5;
+  --r:10px; --r-sm:7px;
+  --shadow:0 1px 2px rgba(20,27,35,.05), 0 10px 28px -20px rgba(20,27,35,.45);
+  --focus:#2C6FB5;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D131A; --surface:#161E27; --surface-2:#1C2733; --surface-3:#22303E;
+    --ink:#E7ECF2; --ink-2:#B5C1CE; --muted:#8593A3;
+    --line:#293544; --line-strong:#3B4C60;
+    --navy:#0F1A25; --navy-2:#17293B; --on-navy:#E7ECF2;
+    --hv:#E3C400; --on-hv:#17190C; --hv-soft:#38320D; --hv-line:#6E6210;
+    --ok:#5DC99C; --ok-bg:#10352A; --ok-line:#1F5C48;
+    --warn:#E2A93F; --warn-bg:#372B10; --warn-line:#6A521C;
+    --bad:#F28C80; --bad-bg:#391A17; --bad-line:#6B322B;
+    --chart:#7FA8D0; --chart-soft:#22374C;
+    --focus:#7FB3E8;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0D131A; --surface:#161E27; --surface-2:#1C2733; --surface-3:#22303E;
+  --ink:#E7ECF2; --ink-2:#B5C1CE; --muted:#8593A3;
+  --line:#293544; --line-strong:#3B4C60;
+  --navy:#0F1A25; --navy-2:#17293B; --on-navy:#E7ECF2;
+  --hv:#E3C400; --on-hv:#17190C; --hv-soft:#38320D; --hv-line:#6E6210;
+  --ok:#5DC99C; --ok-bg:#10352A; --ok-line:#1F5C48;
+  --warn:#E2A93F; --warn-bg:#372B10; --warn-line:#6A521C;
+  --bad:#F28C80; --bad-bg:#391A17; --bad-line:#6B322B;
+  --chart:#7FA8D0; --chart-soft:#22374C;
+  --focus:#7FB3E8;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"Barlow","Segoe UI",system-ui,sans-serif;
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Barlow Condensed",Haettenschweiler,"Arial Narrow",sans-serif;margin:0;font-weight:700;letter-spacing:.01em;text-wrap:balance}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+
+/* ---------- topbar ---------- */
+.topbar{background:var(--navy);color:var(--on-navy);border-bottom:3px solid var(--hv)}
+.topbar-in{max-width:1240px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{display:block}
+.brand-name{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:23px;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.brand-sub{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9DB0C4;line-height:1;margin-top:3px}
+.sitio{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:#A9BACC;border-left:1px solid #33475D;padding-left:16px}
+.clock{font-size:21px;font-weight:500;letter-spacing:.02em}
+.clock small{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9DB0C4;font-family:"Barlow",sans-serif}
+.link-state{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;padding:5px 9px;border-radius:999px;border:1px solid #33475D;color:#B6C6D6}
+.dot{width:7px;height:7px;border-radius:50%;background:#6EC79E}
+.dot.local{background:var(--hv)}
+
+/* ---------- tabs ---------- */
+.tabs{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.tabs-in{max-width:1240px;margin:0 auto;padding:0 20px;display:flex;gap:2px;overflow-x:auto}
+.tab{appearance:none;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);
+  font-family:"Barlow Condensed",sans-serif;font-size:17px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  padding:14px 16px 11px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--hv)}
+.tab .badge{margin-left:7px}
+
+/* ---------- layout ---------- */
+main{max-width:1240px;margin:0 auto;padding:24px 20px 72px}
+.view[hidden]{display:none}
+.cols{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.cols{grid-template-columns:1fr}}
+.stack{display:flex;flex-direction:column;gap:20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.panel-hd{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.panel-hd h2{font-size:19px;letter-spacing:.05em;text-transform:uppercase}
+.panel-hd .spacer{margin-left:auto}
+.panel-bd{padding:18px}
+.panel-bd.tight{padding:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- buttons / fields ---------- */
+button{font-family:inherit}
+.btn{appearance:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+  border-radius:var(--r-sm);padding:8px 13px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;
+  align-items:center;gap:7px;line-height:1.2;transition:background .12s,border-color .12s}
+.btn:hover{background:var(--surface-2);border-color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-hv{background:var(--hv);border-color:var(--hv-line);color:var(--on-hv)}
+.btn-hv:hover{background:#F0D200;border-color:var(--hv-line)}
+.btn-navy{background:var(--navy);border-color:var(--navy);color:var(--on-navy)}
+.btn-navy:hover{background:var(--navy-2);border-color:var(--navy-2)}
+.btn-lg{padding:12px 20px;font-size:16px;font-family:"Barlow Condensed",sans-serif;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+.btn-sm{padding:5px 9px;font-size:13px}
+.btn-danger{color:var(--bad);border-color:var(--bad-line)}
+.btn-danger:hover{background:var(--bad-bg)}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:9px 11px;width:100%}
+textarea{resize:vertical;min-height:64px;line-height:1.45}
+input[type="checkbox"]{width:auto;accent-color:var(--navy)}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row>*{flex:1 1 160px;min-width:0}
+.hint{font-size:12.5px;color:var(--muted);line-height:1.45}
+
+/* ---------- chips ---------- */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.chip.ok{background:var(--ok-bg);border-color:var(--ok-line);color:var(--ok)}
+.chip.warn{background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn)}
+.chip.bad{background:var(--bad-bg);border-color:var(--bad-line);color:var(--bad)}
+.chip.hv{background:var(--hv-soft);border-color:var(--hv-line);color:var(--ink)}
+.badge{display:inline-block;min-width:19px;text-align:center;font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:999px;background:var(--surface-3);color:var(--ink-2)}
+.badge.alert{background:var(--bad-bg);color:var(--bad)}
+
+/* ---------- ronda activa ---------- */
+.activa{border-left:5px solid var(--hv)}
+.activa-hd{display:flex;gap:16px;align-items:flex-start;padding:16px 18px;background:var(--hv-soft);border-bottom:1px solid var(--hv-line);flex-wrap:wrap}
+.activa-hd h2{font-size:22px;letter-spacing:.03em;text-transform:uppercase}
+.activa-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:5px;font-size:13.5px;color:var(--ink-2)}
+.activa-meta b{color:var(--ink);font-weight:600}
+.timer{margin-left:auto;text-align:right}
+.timer .t{font-size:30px;font-weight:600;line-height:1;letter-spacing:-.01em}
+.progress{height:8px;background:var(--surface-3);border-radius:999px;overflow:hidden;margin-top:12px;width:100%}
+.progress i{display:block;height:100%;background:var(--hv);border-radius:999px;transition:width .3s}
+
+.scan{display:flex;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line);align-items:flex-end;flex-wrap:wrap}
+.scan label.f{flex:1 1 240px}
+.scan input{font-family:"IBM Plex Mono",monospace;font-size:19px;letter-spacing:.14em;text-transform:uppercase;padding:11px 13px;font-weight:500}
+
+/* ---------- lista de puntos ---------- */
+.pts{list-style:none;margin:0;padding:0}
+.pt{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:14px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line)}
+.pt:last-child{border-bottom:0}
+.pt.next{background:var(--surface-2);box-shadow:inset 4px 0 0 var(--hv)}
+.pt-n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:14px;
+  border:1.5px solid var(--line-strong);color:var(--muted);background:var(--surface)}
+.pt.done .pt-n{background:var(--navy);border-color:var(--navy);color:var(--on-navy)}
+.pt.next .pt-n{border-color:var(--hv-line);background:var(--hv);color:var(--on-hv)}
+.pt-nom{font-weight:600;font-size:15.5px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pt-sub{font-size:12.5px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-top:2px}
+.pt-code{font-family:"IBM Plex Mono",monospace;font-size:12.5px;letter-spacing:.08em;color:var(--ink-2);background:var(--surface-3);padding:1px 6px;border-radius:4px}
+.pt-act{display:flex;align-items:center;gap:10px;justify-self:end;text-align:right}
+.pt-hora{font-size:17px;font-weight:500;line-height:1.1}
+.pt-nota{grid-column:2 / -1;font-size:13.5px;color:var(--ink-2);background:var(--surface-2);border-left:3px solid var(--line-strong);
+  padding:7px 11px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin-top:4px}
+.pt-nota.novedad{border-left-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+@media (max-width:620px){
+  .pt{grid-template-columns:34px minmax(0,1fr);row-gap:8px}
+  .pt-act{grid-column:2;justify-self:start;text-align:left}
+}
+
+/* ---------- tablas ---------- */
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);text-align:left;padding:9px 14px;border-bottom:1px solid var(--line-strong);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.empty{padding:34px 18px;text-align:center;color:var(--muted);font-size:14px}
+.empty strong{display:block;font-family:"Barlow Condensed",sans-serif;font-size:19px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--ink-2);margin-bottom:5px}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:820px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.kpi .v{font-size:33px;font-weight:600;line-height:1.05;letter-spacing:-.015em;font-family:"IBM Plex Mono",monospace}
+.kpi .l{font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.kpi .d{font-size:12.5px;color:var(--muted);margin-top:3px}
+.kpi.alerta .v{color:var(--bad)}
+
+/* ---------- chart ---------- */
+.chart-wrap{position:relative}
+.chart-wrap svg{display:block;width:100%;height:auto;overflow:visible}
+.bar{fill:var(--chart)}
+.bar-bg{fill:var(--chart-soft)}
+.gridline{stroke:var(--line);stroke-width:1}
+.axis-t{fill:var(--muted);font-size:11px;font-family:"IBM Plex Mono",monospace}
+.hit{fill:transparent;cursor:pointer}
+.tip{position:absolute;pointer-events:none;background:var(--navy);color:var(--on-navy);border-radius:var(--r-sm);
+  padding:7px 10px;font-size:12.5px;line-height:1.35;box-shadow:var(--shadow);transform:translate(-50%,-115%);white-space:nowrap;opacity:0;transition:opacity .1s}
+.tip b{font-family:"IBM Plex Mono",monospace;font-weight:600}
+.meter{height:7px;border-radius:999px;background:var(--chart-soft);overflow:hidden;min-width:70px}
+.meter i{display:block;height:100%;background:var(--chart);border-radius:999px}
+
+/* ---------- dialog ---------- */
+dialog{border:1px solid var(--line-strong);border-radius:var(--r);padding:0;background:var(--surface);color:var(--ink);
+  max-width:520px;width:calc(100% - 32px);box-shadow:0 24px 60px -20px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(10,16,22,.55)}
+.dlg-hd{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.dlg-hd h3{font-size:20px;letter-spacing:.05em;text-transform:uppercase}
+.dlg-bd{padding:18px;display:flex;flex-direction:column;gap:14px;max-height:64vh;overflow-y:auto}
+.dlg-ft{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.seg{display:flex;border:1px solid var(--line-strong);border-radius:var(--r-sm);overflow:hidden}
+.seg button{flex:1;border:0;background:var(--surface);color:var(--ink-2);padding:10px 8px;font-size:14px;font-weight:600;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line-strong)}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--on-navy)}
+.seg button.nov[aria-pressed="true"]{background:var(--bad);color:#fff}
+
+/* ---------- toast ---------- */
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(160%);z-index:60;
+  background:var(--navy);color:var(--on-navy);padding:11px 18px;border-radius:999px;box-shadow:var(--shadow);
+  font-size:14.5px;font-weight:500;transition:transform .25s;max-width:calc(100% - 32px)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.bad{background:var(--bad);color:#fff}
+#toast.hv{background:var(--hv);color:var(--on-hv)}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface-2);border-radius:var(--r) var(--r) 0 0}
+.filters label.f{flex:0 1 170px}
+.filters .chk{flex-direction:row;align-items:center;gap:7px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);font-weight:500}
+.cfg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px;align-items:start}
+.pick{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2)}
+.pick input[type="number"]{width:80px;flex:none}
+.pick select{flex:1;min-width:0;font-size:14px}
+.pick .ord{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;
+  font-weight:600;background:var(--navy);color:var(--on-navy);font-variant-numeric:tabular-nums}
+.pick .x{flex:none;padding:5px 10px;font-size:16px;line-height:1;color:var(--bad);border-color:var(--bad-line)}
+.pick .x:hover{background:var(--bad-bg)}
+</style>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <svg width="30" height="34" viewBox="0 0 30 34" aria-hidden="true">
+        <path d="M15 1.5 28 6v11.2C28 25 22.4 30.6 15 32.5 7.6 30.6 2 25 2 17.2V6z" fill="#E3C400"/>
+        <path d="M15 5 24.6 8.3v8.9c0 5.9-4.1 10.2-9.6 11.7-5.5-1.5-9.6-5.8-9.6-11.7V8.3z" fill="#1B2E45"/>
+        <circle cx="15" cy="17" r="5.6" fill="none" stroke="#E3C400" stroke-width="1.8"/>
+        <path d="M15 13.4V17l2.6 1.6" fill="none" stroke="#E3C400" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="brand-name">Ronda Vigía</div>
+        <div class="brand-sub">Control de rondas</div>
+      </div>
+    </div>
+    <div class="sitio" id="sitio">Cargando instalación…</div>
+    <div class="clock mono"><span id="reloj">--:--:--</span><small id="fecha">—</small></div>
+    <button class="btn btn-hv btn-sm" id="btnInstalar" hidden>Instalar app</button>
+    <span class="link-state"><span class="dot" id="linkDot"></span><span id="linkTxt">Conectando</span></span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Secciones">
+  <div class="tabs-in">
+    <button class="tab" role="tab" id="tab-ronda" aria-controls="v-ronda" aria-selected="true">Ronda</button>
+    <button class="tab" role="tab" id="tab-bitacora" aria-controls="v-bitacora" aria-selected="false">Bitácora <span class="badge" id="bdgNov">0</span></button>
+    <button class="tab" role="tab" id="tab-reportes" aria-controls="v-reportes" aria-selected="false">Reportes</button>
+    <button class="tab" role="tab" id="tab-config" aria-controls="v-config" aria-selected="false">Configuración</button>
+  </div>
+</nav>
+
+<main>
+  <section class="view" id="v-ronda" role="tabpanel" aria-labelledby="tab-ronda">
+    <div class="cols">
+      <div class="stack" id="colRonda"></div>
+      <div class="stack" id="colTurno"></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-bitacora" role="tabpanel" aria-labelledby="tab-bitacora" hidden>
+    <div class="panel">
+      <div class="filters" id="filtros"></div>
+      <div class="panel-bd tight" id="tablaBitacora"></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-reportes" role="tabpanel" aria-labelledby="tab-reportes" hidden>
+    <div class="stack" id="repWrap"></div>
+  </section>
+
+  <section class="view" id="v-config" role="tabpanel" aria-labelledby="tab-config" hidden>
+    <div class="stack" id="cfgWrap"></div>
+  </section>
+</main>
+
+<dialog id="dlg"></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const uid = (p) => p + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const byId = (arr, id) => arr.find(x => x.id === id) || null;
+
+const HORA = new Intl.DateTimeFormat("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false });
+const HMS = new Intl.DateTimeFormat("es-CL", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+const FECHA = new Intl.DateTimeFormat("es-CL", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+const FCORTA = new Intl.DateTimeFormat("es-CL", { day: "2-digit", month: "2-digit", year: "2-digit" });
+const fmtHora = (iso) => iso ? HORA.format(new Date(iso)) : "—";
+const fmtFC = (iso) => iso ? FCORTA.format(new Date(iso)) : "—";
+const diaKey = (d) => { const x = new Date(d); return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); };
+const hoyKey = () => diaKey(new Date());
+const minutos = (a, b) => Math.round((new Date(b) - new Date(a)) / 60000);
+const pct = (n, d) => d > 0 ? Math.round((n / d) * 100) : 0;
+
+/* ---------------- estados de marca ---------------- */
+const ESTADOS = {
+  a_tiempo:   { txt: "A tiempo",   cls: "ok"   },
+  anticipado: { txt: "Anticipado", cls: "warn" },
+  retrasado:  { txt: "Retrasado",  cls: "warn" },
+  omitido:    { txt: "Omitido",    cls: "bad"  }
+};
+const chipEstado = (e) => {
+  const m = ESTADOS[e] || { txt: e, cls: "" };
+  return '<span class="chip ' + m.cls + '">' + m.txt + "</span>";
+};
+
+/* ---------------- datos de ejemplo (sólo modo local) ---------------- */
+function datosEjemplo() {
+  const g = [
+    /* Personal de ejemplo. Sin documento de identidad a propósito: son
+       personas ficticias y un RUT inventado puede coincidir con alguien real. */
+    { id: "g_ha", nombre: "Héctor Aravena (ejemplo)", rut: "", turno: "Noche", activo: true },
+    { id: "g_mp", nombre: "Marisol Peña (ejemplo)", rut: "", turno: "Día", activo: true },
+    { id: "g_rc", nombre: "Rodrigo Cifuentes (ejemplo)", rut: "", turno: "Noche", activo: true },
+    { id: "g_jv", nombre: "Javiera Núñez (ejemplo)", rut: "", turno: "Tarde", activo: true }
+  ];
+  const p = [
+    { id: "p1", codigo: "PC-01", nombre: "Portería principal", zona: "Acceso", activo: true },
+    { id: "p2", codigo: "PC-02", nombre: "Estacionamiento visitas", zona: "Exterior", activo: true },
+    { id: "p3", codigo: "PC-03", nombre: "Bodega de insumos", zona: "Nave 1", activo: true },
+    { id: "p4", codigo: "PC-04", nombre: "Sala eléctrica", zona: "Nave 1", activo: true },
+    { id: "p5", codigo: "PC-05", nombre: "Patio de maniobras", zona: "Exterior", activo: true },
+    { id: "p6", codigo: "PC-06", nombre: "Cerco norte", zona: "Perímetro", activo: true },
+    { id: "p7", codigo: "PC-07", nombre: "Cerco poniente", zona: "Perímetro", activo: true },
+    { id: "p8", codigo: "PC-08", nombre: "Sala de máquinas", zona: "Nave 2", activo: true }
+  ];
+  const r = [
+    { id: "r_per", nombre: "Perimetral nocturna", toleranciaMin: 5, ordenEstricto: true, activo: true,
+      puntos: [{ puntoId: "p1", minuto: 0 }, { puntoId: "p6", minuto: 8 }, { puntoId: "p7", minuto: 16 },
+               { puntoId: "p5", minuto: 24 }, { puntoId: "p2", minuto: 32 }, { puntoId: "p1", minuto: 40 }] },
+    { id: "r_int", nombre: "Interior diurna", toleranciaMin: 8, ordenEstricto: false, activo: true,
+      puntos: [{ puntoId: "p1", minuto: 0 }, { puntoId: "p3", minuto: 10 }, { puntoId: "p4", minuto: 18 },
+               { puntoId: "p8", minuto: 26 }] }
+  ];
+  return { guardias: g, puntos: p, rutas: r, rondas: [], sitio: { nombre: "Planta San Bernardo" } };
+}
+
+/* ---------------- estado ---------------- */
+const COLS = ["guardias", "puntos", "rutas", "rondas"];
+const state = {
+  guardias: [], puntos: [], rutas: [], rondas: [],
+  sitio: { nombre: "Instalación" },
+  vista: "ronda",
+  backend: "local",
+  resuelto: false,
+  localDirty: false,
+  filtros: { dias: "7", guardia: "", ruta: "", soloNovedades: false },
+  repDias: 14
+};
+let DB = null;
+let DOWN = null;
+
+/* ---------------- persistencia ---------------- */
+const LSK = "ronda_vigia_v1";
+
+function cargarLocal() {
+  try {
+    const raw = localStorage.getItem(LSK);
+    if (raw) {
+      const d = JSON.parse(raw);
+      COLS.forEach(c => { if (Array.isArray(d[c])) state[c] = d[c]; });
+      if (d.sitio) state.sitio = d.sitio;
+      return true;
+    }
+  } catch (e) { /* almacenamiento no disponible */ }
+  const ej = datosEjemplo();
+  COLS.forEach(c => state[c] = ej[c]);
+  state.sitio = ej.sitio;
+  return false;
+}
+
+function guardarLocal() {
+  try {
+    const d = { sitio: state.sitio };
+    COLS.forEach(c => d[c] = state[c]);
+    localStorage.setItem(LSK, JSON.stringify(d));
+  } catch (e) { /* modo privado: se mantiene sólo en memoria */ }
+}
+
+async function guardar(col, obj) {
+  const copia = JSON.parse(JSON.stringify(obj));
+  const i = state[col].findIndex(x => x.id === copia.id);
+  if (i >= 0) state[col][i] = copia; else state[col].push(copia);
+  if (DB) {
+    const body = Object.assign({}, copia); delete body.id;
+    try { await DB.collection(col).doc(copia.id).set(body); }
+    catch (e) { avisar(errTxt(e), "bad"); }
+  } else { state.localDirty = true; guardarLocal(); }
+  render();
+}
+
+async function borrar(col, id) {
+  state[col] = state[col].filter(x => x.id !== id);
+  if (DB) { try { await DB.collection(col).doc(id).delete(); } catch (e) { avisar(errTxt(e), "bad"); } }
+  else { state.localDirty = true; guardarLocal(); }
+  render();
+}
+
+async function guardarSitio(nombre) {
+  state.sitio = { nombre };
+  if (DB) { try { await DB.doc("config/sitio").set({ nombre }); } catch (e) { avisar(errTxt(e), "bad"); } }
+  else { state.localDirty = true; guardarLocal(); }
+  render();
+}
+
+function errTxt(e) {
+  const c = e && e.code;
+  if (c === "quota_exceeded") return "El registro está lleno. Archiva rondas antiguas para seguir registrando.";
+  if (c === "resource_exhausted") return "Demasiadas operaciones seguidas. Espera unos segundos e intenta de nuevo.";
+  if (c === "invalid_argument") return "El registro rechazó el dato. Revisa los campos e intenta de nuevo.";
+  if (c === "revoked") return "Se perdió el acceso al registro compartido. Recarga la página.";
+  return "No se pudo guardar en el registro compartido. Reintenta en un momento.";
+}
+
+async function conectar() {
+  let db = null;
+  try { db = window.claude && claude.use ? await claude.use("db") : null; } catch (e) { db = null; }
+  if (!db) { state.resuelto = true; marcarLink(); render(); return; }
+
+  DB = db;
+  state.backend = "db";
+  if (!state.localDirty) COLS.forEach(c => state[c] = []);
+  state.resuelto = true;
+  marcarLink();
+
+  COLS.forEach(col => {
+    DB.collection(col).onSnapshot(
+      snap => {
+        state[col] = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+        render();
+      },
+      e => { avisar(errTxt(e), "bad"); }
+    );
+  });
+  DB.doc("config/sitio").onSnapshot(
+    s => { if (s.exists) { state.sitio = s.data(); render(); } },
+    () => {}
+  );
+  try { DOWN = await claude.use("downloads"); } catch (e) { DOWN = null; }
+  render();
+}
+
+function marcarLink() {
+  const dot = $("#linkDot"), txt = $("#linkTxt");
+  if (state.backend === "db") { dot.classList.remove("local"); txt.textContent = "Registro compartido"; }
+  else { dot.classList.add("local"); txt.textContent = "Sólo este equipo"; }
+}
+
+/* ---------------- dominio ---------------- */
+const rondaActiva = () => state.rondas.find(r => r.estado === "en_curso") || null;
+
+function puntosDeRuta(ruta) {
+  if (!ruta) return [];
+  return (ruta.puntos || []).map((rp, i) => {
+    const p = byId(state.puntos, rp.puntoId);
+    return { idx: i, puntoId: rp.puntoId, minuto: rp.minuto,
+             codigo: p ? p.codigo : "??", nombre: p ? p.nombre : "Punto eliminado", zona: p ? p.zona : "—" };
+  });
+}
+
+function estadoMarca(ronda, minutoEsperado, horaIso, tolerancia) {
+  const desfase = minutos(ronda.inicio, horaIso) - minutoEsperado;
+  let estado = "a_tiempo";
+  if (desfase > tolerancia) estado = "retrasado";
+  else if (desfase < -tolerancia) estado = "anticipado";
+  return { estado, desfase };
+}
+
+function marcasDe(ronda) { return ronda.marcas || []; }
+function marcaEnIdx(ronda, idx) { return marcasDe(ronda).find(m => m.idx === idx) || null; }
+
+function proximoIdx(ronda, ruta) {
+  const pts = puntosDeRuta(ruta);
+  for (const p of pts) if (!marcaEnIdx(ronda, p.idx)) return p.idx;
+  return -1;
+}
+
+function resumenRonda(r) {
+  const total = r.totalPuntos || puntosDeRuta(byId(state.rutas, r.rutaId)).length;
+  const ms = marcasDe(r);
+  const aTiempo = ms.filter(m => m.estado === "a_tiempo").length;
+  const fuera = ms.filter(m => m.estado === "retrasado" || m.estado === "anticipado").length;
+  const novedades = ms.filter(m => m.novedad).length;
+  const omitidos = r.estado === "finalizada" ? Math.max(0, total - ms.length) : 0;
+  return { total, marcadas: ms.length, aTiempo, fuera, novedades, omitidos };
+}
+
+/* filas planas de la bitácora, más recientes primero */
+function bitacora() {
+  const filas = [];
+  state.rondas.forEach(r => {
+    const ruta = byId(state.rutas, r.rutaId);
+    const g = byId(state.guardias, r.guardiaId);
+    const pts = puntosDeRuta(ruta);
+    marcasDe(r).forEach(m => {
+      filas.push({ rondaId: r.id, hora: m.hora, ruta: r.rutaNombre || (ruta ? ruta.nombre : "—"),
+        guardia: r.guardiaNombre || (g ? g.nombre : "—"), guardiaId: r.guardiaId, rutaId: r.rutaId,
+        punto: m.nombre, codigo: m.codigo, zona: m.zona, estado: m.estado, desfase: m.desfase,
+        metodo: m.metodo, novedad: !!m.novedad, nota: m.nota || "", coords: m.coords || null });
+    });
+    if (r.estado === "finalizada") {
+      pts.forEach(p => {
+        if (!marcaEnIdx(r, p.idx)) {
+          filas.push({ rondaId: r.id, hora: r.fin, ruta: r.rutaNombre || (ruta ? ruta.nombre : "—"),
+            guardia: r.guardiaNombre || (g ? g.nombre : "—"), guardiaId: r.guardiaId, rutaId: r.rutaId,
+            punto: p.nombre, codigo: p.codigo, zona: p.zona, estado: "omitido", desfase: null,
+            metodo: "—", novedad: false, nota: "Punto no marcado durante la ronda.", coords: null });
+        }
+      });
+    }
+  });
+  return filas.sort((a, b) => new Date(b.hora) - new Date(a.hora));
+}
+
+function bitacoraFiltrada() {
+  const f = state.filtros;
+  const desde = f.dias === "todo" ? null : new Date(Date.now() - parseInt(f.dias, 10) * 864e5);
+  return bitacora().filter(x =>
+    (!desde || new Date(x.hora) >= desde) &&
+    (!f.guardia || x.guardiaId === f.guardia) &&
+    (!f.ruta || x.rutaId === f.ruta) &&
+    (!f.soloNovedades || x.novedad || x.estado === "omitido"));
+}
+
+/* ---------------- avisos ---------------- */
+let toastT = null;
+function avisar(msg, tipo) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.className = "show" + (tipo ? " " + tipo : "");
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { t.className = ""; }, 3600);
+}
+
+/* ---------------- render ---------------- */
+let tickT = null;
+function render() {
+  const act = document.activeElement;
+  const foco = act && act.id ? { id: act.id, ini: act.selectionStart, fin: act.selectionEnd } : null;
+
+  renderRonda();
+  renderTurno();
+  renderBitacora();
+  renderReportes();
+  renderConfig();
+
+  $("#sitio").textContent = state.sitio && state.sitio.nombre ? state.sitio.nombre : "Instalación";
+  const nov = bitacora().filter(x => (x.novedad || x.estado === "omitido") && new Date(x.hora) >= new Date(Date.now() - 7 * 864e5)).length;
+  const b = $("#bdgNov");
+  b.textContent = nov;
+  b.className = "badge" + (nov ? " alert" : "");
+
+  if (foco) {
+    const el = document.getElementById(foco.id);
+    if (el && el.focus) {
+      el.focus();
+      if (foco.ini != null && el.setSelectionRange) { try { el.setSelectionRange(foco.ini, foco.fin); } catch (e) {} }
+    }
+  }
+  clearTimeout(tickT);
+  if (rondaActiva()) tickT = setTimeout(renderRonda, 30000);
+}
+
+function bloqueado() { return !state.resuelto; }
+
+/* ----- vista Ronda ----- */
+function renderRonda() {
+  const cont = $("#colRonda");
+  const r = rondaActiva();
+  if (!r) { cont.innerHTML = panelInicio(); wireInicio(); return; }
+
+  const ruta = byId(state.rutas, r.rutaId);
+  const pts = puntosDeRuta(ruta);
+  const tol = ruta ? (ruta.toleranciaMin || 5) : 5;
+  const estricto = ruta ? !!ruta.ordenEstricto : false;
+  const sig = proximoIdx(r, ruta);
+  const res = resumenRonda(r);
+  const trans = minutos(r.inicio, new Date());
+  const hh = String(Math.floor(trans / 60)).padStart(2, "0"), mm = String(trans % 60).padStart(2, "0");
+
+  let lista = "";
+  pts.forEach(p => {
+    const m = marcaEnIdx(r, p.idx);
+    const esSig = p.idx === sig;
+    const cls = m ? "pt done" : (esSig ? "pt next" : "pt");
+    let der = "";
+    if (m) {
+      der = '<div><div class="pt-hora mono">' + fmtHora(m.hora) + "</div>" +
+            '<div class="pt-sub" style="justify-content:flex-end">' + (m.desfase > 0 ? "+" : "") + m.desfase + " min</div></div>" +
+            chipEstado(m.estado) + (m.novedad ? '<span class="chip bad">Novedad</span>' : "");
+    } else {
+      const dis = (estricto && !esSig) || bloqueado();
+      der = '<button class="btn btn-sm ' + (esSig ? "btn-hv" : "") + '" data-marcar="' + p.idx + '"' + (dis ? " disabled" : "") + '>' +
+            (esSig ? "Marcar" : "Marca manual") + "</button>";
+    }
+    lista += '<li class="' + cls + '">' +
+      '<span class="pt-n">' + (p.idx + 1) + "</span>" +
+      '<div><div class="pt-nom">' + esc(p.nombre) + '<span class="pt-code">' + esc(p.codigo) + "</span>" +
+      (m && m.metodo === "manual" ? '<span class="chip warn">Manual</span>' : "") + "</div>" +
+      '<div class="pt-sub"><span>' + esc(p.zona) + "</span><span>Programado: min " + p.minuto + "</span>" +
+      (m && m.coords ? "<span>GPS " + m.coords + "</span>" : "") + "</div></div>" +
+      '<div class="pt-act">' + der + "</div>" +
+      (m && m.nota ? '<div class="pt-nota' + (m.novedad ? " novedad" : "") + '">' + esc(m.nota) + "</div>" : "") +
+      "</li>";
+  });
+
+  cont.innerHTML =
+    '<div class="panel activa">' +
+      '<div class="activa-hd">' +
+        "<div><h2>" + esc(ruta ? ruta.nombre : "Ruta eliminada") + "</h2>" +
+          '<div class="activa-meta"><span>Guardia <b>' + esc(r.guardiaNombre) + "</b></span>" +
+          "<span>Inicio <b class=\"mono\">" + fmtHora(r.inicio) + "</b></span>" +
+          "<span>Tolerancia <b>&plusmn;" + tol + " min</b></span>" +
+          (estricto ? "<span><b>Orden estricto</b></span>" : "<span>Orden libre</span>") + "</div></div>" +
+        '<div class="timer"><div class="t mono">' + hh + ":" + mm + '</div><div class="eyebrow">Transcurrido</div></div>' +
+        '<div class="progress" aria-hidden="true"><i style="width:' + pct(res.marcadas, res.total) + '%"></i></div>' +
+        '<div class="eyebrow" style="width:100%">' + res.marcadas + " de " + res.total + " puntos marcados" +
+          (res.novedades ? " &middot; " + res.novedades + " con novedad" : "") + "</div>" +
+      "</div>" +
+      '<div class="scan">' +
+        '<label class="f" for="codigoIn">Código del punto de control' +
+          '<input id="codigoIn" placeholder="PC-00" autocomplete="off" spellcheck="false"' + (bloqueado() ? " disabled" : "") + "></label>" +
+        '<button class="btn btn-hv btn-lg" id="btnScan"' + (bloqueado() ? " disabled" : "") + ">Registrar</button>" +
+        '<button class="btn" id="btnFin">Cerrar ronda</button>' +
+      "</div>" +
+      '<ul class="pts">' + lista + "</ul>" +
+    "</div>";
+
+  const inp = $("#codigoIn");
+  $("#btnScan").onclick = () => registrarPorCodigo();
+  inp.addEventListener("keydown", e => { if (e.key === "Enter" || e.keyCode === 13) { e.preventDefault(); registrarPorCodigo(); } });
+  $("#btnFin").onclick = () => dlgFinalizar(r);
+  $$("[data-marcar]", cont).forEach(b => b.onclick = () => {
+    const idx = parseInt(b.dataset.marcar, 10);
+    const p = pts.find(x => x.idx === idx);
+    dlgMarcar(r, ruta, p, idx === sig ? "codigo" : "manual");
+  });
+}
+
+function panelInicio() {
+  const gs = state.guardias.filter(g => g.activo);
+  const rs = state.rutas.filter(r => r.activo && (r.puntos || []).length);
+  if (!gs.length || !rs.length) {
+    return '<div class="panel"><div class="panel-hd"><h2>Iniciar ronda</h2></div>' +
+      '<div class="empty"><strong>Falta configuración</strong>' +
+      "Registra al menos " + (!gs.length ? "un guardia" : "") + (!gs.length && !rs.length ? " y " : "") +
+      (!rs.length ? "una ruta con puntos" : "") + " en la pestaña Configuración.</div></div>";
+  }
+  return '<div class="panel"><div class="panel-hd"><h2>Iniciar ronda</h2></div><div class="panel-bd">' +
+    '<p class="hint" style="margin:0 0 16px">Selecciona quién sale a ronda y qué recorrido hará. El cronómetro parte al confirmar y cada punto se compara con su minuto programado.</p>' +
+    '<div class="row">' +
+      '<label class="f">Guardia<select id="selG">' + gs.map(g => '<option value="' + g.id + '">' + esc(g.nombre) + " &mdash; turno " + esc(g.turno) + "</option>").join("") + "</select></label>" +
+      '<label class="f">Ruta<select id="selR">' + rs.map(r => '<option value="' + r.id + '">' + esc(r.nombre) + " (" + (r.puntos || []).length + " puntos)</option>").join("") + "</select></label>" +
+    "</div>" +
+    '<div style="margin-top:16px"><button class="btn btn-hv btn-lg" id="btnIniciar"' + (bloqueado() ? " disabled" : "") + ">Iniciar ronda</button></div>" +
+    "</div></div>";
+}
+
+function wireInicio() {
+  const b = $("#btnIniciar");
+  if (b) b.onclick = () => iniciarRonda($("#selG").value, $("#selR").value);
+}
+
+/* ----- columna derecha ----- */
+function renderTurno() {
+  const cont = $("#colTurno");
+  const hoy = hoyKey();
+  const deHoy = state.rondas.filter(r => diaKey(r.inicio) === hoy);
+  let marcadas = 0, esperadas = 0, novedades = 0, omitidos = 0;
+  deHoy.forEach(r => { const s = resumenRonda(r); marcadas += s.marcadas; esperadas += s.total; novedades += s.novedades; omitidos += s.omitidos; });
+
+  const nov = bitacora().filter(x => x.novedad || x.estado === "omitido").slice(0, 6);
+
+  let rondasHtml = deHoy.length
+    ? deHoy.slice().sort((a, b) => new Date(b.inicio) - new Date(a.inicio)).map(r => {
+        const s = resumenRonda(r);
+        return '<li class="pt"><span class="pt-n">' + (r.estado === "en_curso" ? "&bull;" : "&check;") + "</span>" +
+          '<div><div class="pt-nom">' + esc(r.rutaNombre) + "</div>" +
+          '<div class="pt-sub"><span>' + esc(r.guardiaNombre) + '</span><span class="mono">' + fmtHora(r.inicio) + (r.fin ? "&ndash;" + fmtHora(r.fin) : "") + "</span></div></div>" +
+          '<div class="pt-act">' + (r.estado === "en_curso"
+            ? '<span class="chip hv">En curso</span>'
+            : '<span class="chip ' + (s.omitidos ? "bad" : "ok") + '">' + s.marcadas + "/" + s.total + "</span>") + "</div></li>";
+      }).join("")
+    : '<div class="empty"><strong>Sin rondas hoy</strong>Las rondas iniciadas hoy aparecerán aquí.</div>';
+
+  cont.innerHTML =
+    '<div class="panel"><div class="panel-hd"><h2>Turno de hoy</h2></div>' +
+      '<div class="panel-bd"><div class="kpis" style="grid-template-columns:repeat(2,minmax(0,1fr))">' +
+        '<div class="kpi"><div class="v">' + marcadas + "/" + esperadas + '</div><div class="l">Puntos marcados</div></div>' +
+        '<div class="kpi"><div class="v">' + deHoy.length + '</div><div class="l">Rondas</div></div>' +
+        '<div class="kpi' + (novedades ? " alerta" : "") + '"><div class="v">' + novedades + '</div><div class="l">Novedades</div></div>' +
+        '<div class="kpi' + (omitidos ? " alerta" : "") + '"><div class="v">' + omitidos + '</div><div class="l">Omisiones</div></div>' +
+      "</div></div></div>" +
+    '<div class="panel"><div class="panel-hd"><h2>Rondas de hoy</h2></div><ul class="pts">' + rondasHtml + "</ul></div>" +
+    '<div class="panel"><div class="panel-hd"><h2>Últimas novedades</h2></div>' +
+      (nov.length ? '<ul class="pts">' + nov.map(x =>
+        '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
+        '<div><div class="pt-nom">' + esc(x.punto) + "</div>" +
+        '<div class="pt-sub"><span>' + esc(x.guardia) + '</span><span class="mono">' + fmtFC(x.hora) + " " + fmtHora(x.hora) + "</span></div>" +
+        (x.nota ? '<div class="pt-nota novedad" style="grid-column:1/-1">' + esc(x.nota) + "</div>" : "") + "</div>" +
+        '<div class="pt-act">' + chipEstado(x.estado) + "</div></li>").join("") + "</ul>"
+        : '<div class="empty"><strong>Sin novedades</strong>Ninguna marca registrada con novedad ni punto omitido.</div>') +
+    "</div>";
+}
+
+/* ----- Bitácora ----- */
+function renderBitacora() {
+  const f = state.filtros;
+  $("#filtros").innerHTML =
+    '<label class="f">Período<select id="fDias">' +
+      ["7", "30", "90", "todo"].map(d => '<option value="' + d + '"' + (f.dias === d ? " selected" : "") + ">" + (d === "todo" ? "Todo el registro" : "Últimos " + d + " días") + "</option>").join("") + "</select></label>" +
+    '<label class="f">Guardia<select id="fG"><option value="">Todos</option>' +
+      state.guardias.map(g => '<option value="' + g.id + '"' + (f.guardia === g.id ? " selected" : "") + ">" + esc(g.nombre) + "</option>").join("") + "</select></label>" +
+    '<label class="f">Ruta<select id="fR"><option value="">Todas</option>' +
+      state.rutas.map(r => '<option value="' + r.id + '"' + (f.ruta === r.id ? " selected" : "") + ">" + esc(r.nombre) + "</option>").join("") + "</select></label>" +
+    '<label class="f chk"><input type="checkbox" id="fN"' + (f.soloNovedades ? " checked" : "") + "> Sólo novedades y omisiones</label>" +
+    '<div style="margin-left:auto;display:flex;gap:8px"><button class="btn" id="btnCsv"' + (puedeDescargar() ? "" : " disabled title=\"La descarga no está disponible en esta vista\"") + ">Exportar CSV</button></div>";
+
+  $("#fDias").onchange = e => { f.dias = e.target.value; render(); };
+  $("#fG").onchange = e => { f.guardia = e.target.value; render(); };
+  $("#fR").onchange = e => { f.ruta = e.target.value; render(); };
+  $("#fN").onchange = e => { f.soloNovedades = e.target.checked; render(); };
+  const csv = $("#btnCsv"); if (csv && puedeDescargar()) csv.onclick = exportarCsv;
+
+  const filas = bitacoraFiltrada();
+  const cont = $("#tablaBitacora");
+  if (!filas.length) {
+    cont.innerHTML = '<div class="empty"><strong>Sin registros</strong>Ninguna marca coincide con los filtros aplicados.</div>';
+    return;
+  }
+  cont.innerHTML = '<div class="tw"><table><thead><tr>' +
+    "<th>Fecha</th><th>Hora</th><th>Punto</th><th>Zona</th><th>Ruta</th><th>Guardia</th><th>Estado</th><th class=\"num\">Desfase</th><th>Registro</th><th>Observación</th>" +
+    "</tr></thead><tbody>" +
+    filas.slice(0, 400).map(x =>
+      "<tr><td class=\"mono\">" + fmtFC(x.hora) + "</td><td class=\"mono\">" + fmtHora(x.hora) + "</td>" +
+      "<td><b>" + esc(x.punto) + '</b><br><span class="pt-code">' + esc(x.codigo) + "</span></td>" +
+      "<td>" + esc(x.zona) + "</td><td>" + esc(x.ruta) + "</td><td>" + esc(x.guardia) + "</td>" +
+      "<td>" + chipEstado(x.estado) + (x.novedad ? ' <span class="chip bad">Novedad</span>' : "") + "</td>" +
+      '<td class="num mono">' + (x.desfase == null ? "—" : (x.desfase > 0 ? "+" : "") + x.desfase) + "</td>" +
+      "<td>" + (x.metodo === "manual" ? '<span class="chip warn">Manual</span>' : x.metodo === "codigo" ? "Código" : "—") + "</td>" +
+      "<td>" + esc(x.nota || "") + "</td></tr>").join("") +
+    "</tbody></table></div>" +
+    (filas.length > 400 ? '<div class="empty">Mostrando las 400 marcas más recientes de ' + filas.length + ". Acota el período para ver el resto.</div>" : "");
+}
+
+async function exportarCsv() {
+  const filas = bitacoraFiltrada();
+  const cab = ["Fecha", "Hora", "Punto", "Codigo", "Zona", "Ruta", "Guardia", "Estado", "Desfase_min", "Registro", "Novedad", "Observacion"];
+  const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const cuerpo = filas.map(x => [fmtFC(x.hora), fmtHora(x.hora), x.punto, x.codigo, x.zona, x.ruta, x.guardia,
+    (ESTADOS[x.estado] || {}).txt || x.estado, x.desfase == null ? "" : x.desfase, x.metodo,
+    x.novedad ? "Si" : "No", x.nota].map(q).join(";"));
+  const csv = "﻿" + cab.join(";") + "\n" + cuerpo.join("\n");
+  const ok = await descargar("bitacora-rondas-" + hoyKey() + ".csv", csv, "text/csv;charset=utf-8");
+  if (ok) avisar("Bitácora exportada (" + filas.length + " marcas).");
+}
+
+/* Dentro de Claude la descarga pasa por la capacidad "downloads"; alojada en un sitio
+   propio no existe window.claude y se usa el mecanismo normal del navegador. */
+const puedeDescargar = () => !!DOWN || !window.claude;
+
+async function descargar(nombre, texto, tipo) {
+  if (DOWN) {
+    try { await DOWN.save({ filename: nombre, data: texto }); return true; }
+    catch (e) { avisar("La descarga no se completó.", "bad"); return false; }
+  }
+  if (window.claude) { avisar("La descarga no está disponible en esta vista.", "bad"); return false; }
+  try {
+    const blob = new Blob([texto], { type: tipo });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = nombre;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+    return true;
+  } catch (e) { avisar("El navegador bloqueó la descarga.", "bad"); return false; }
+}
+
+/* ----- Reportes ----- */
+function renderReportes() {
+  const dias = state.repDias;
+  const desde = new Date(Date.now() - dias * 864e5);
+  const rondas = state.rondas.filter(r => new Date(r.inicio) >= desde);
+  let esperadas = 0, marcadas = 0, aTiempo = 0, novedades = 0, omitidos = 0;
+  rondas.forEach(r => { const s = resumenRonda(r); esperadas += s.total; marcadas += s.marcadas; aTiempo += s.aTiempo; novedades += s.novedades; omitidos += s.omitidos; });
+  const cumpl = pct(marcadas, esperadas);
+  const punt = pct(aTiempo, marcadas);
+
+  /* serie diaria de cumplimiento */
+  const serie = [];
+  for (let i = dias - 1; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 864e5);
+    const k = diaKey(d);
+    const rs = state.rondas.filter(r => diaKey(r.inicio) === k);
+    let e = 0, m = 0;
+    rs.forEach(r => { const s = resumenRonda(r); e += s.total; m += s.marcadas; });
+    serie.push({ k, fecha: d, val: e ? pct(m, e) : null, rondas: rs.length, marcadas: m, esperadas: e });
+  }
+
+  /* por guardia */
+  const porG = {};
+  rondas.forEach(r => {
+    const k = r.guardiaId || "—";
+    porG[k] = porG[k] || { nombre: r.guardiaNombre || "—", rondas: 0, esperadas: 0, marcadas: 0, aTiempo: 0, novedades: 0 };
+    const s = resumenRonda(r);
+    porG[k].rondas++; porG[k].esperadas += s.total; porG[k].marcadas += s.marcadas;
+    porG[k].aTiempo += s.aTiempo; porG[k].novedades += s.novedades;
+  });
+  const listaG = Object.values(porG).sort((a, b) => pct(b.marcadas, b.esperadas) - pct(a.marcadas, a.esperadas));
+
+  /* puntos más omitidos */
+  const omit = {};
+  bitacora().filter(x => new Date(x.hora) >= desde && x.estado === "omitido").forEach(x => {
+    const k = x.codigo + "|" + x.punto;
+    omit[k] = (omit[k] || 0) + 1;
+  });
+  const listaO = Object.entries(omit).map(([k, n]) => ({ codigo: k.split("|")[0], punto: k.split("|")[1], n }))
+    .sort((a, b) => b.n - a.n).slice(0, 6);
+
+  $("#repWrap").innerHTML =
+    '<div class="panel"><div class="panel-hd"><h2>Cumplimiento</h2>' +
+      '<span class="spacer"></span><label class="f" style="flex-direction:row;align-items:center;gap:8px">Período' +
+      '<select id="repSel" style="width:auto">' + [7, 14, 30, 90].map(d => '<option value="' + d + '"' + (dias === d ? " selected" : "") + ">" + d + " días</option>").join("") + "</select></label></div>" +
+      '<div class="panel-bd"><div class="kpis">' +
+        '<div class="kpi"><div class="v">' + cumpl + '%</div><div class="l">Puntos cubiertos</div><div class="d">' + marcadas + " de " + esperadas + " programados</div></div>" +
+        '<div class="kpi"><div class="v">' + punt + '%</div><div class="l">Dentro de tolerancia</div><div class="d">' + aTiempo + " marcas a tiempo</div></div>" +
+        '<div class="kpi' + (omitidos ? " alerta" : "") + '"><div class="v">' + omitidos + '</div><div class="l">Puntos omitidos</div><div class="d">en ' + rondas.length + " ronda" + (rondas.length === 1 ? "" : "s") + "</div></div>" +
+        '<div class="kpi' + (novedades ? " alerta" : "") + '"><div class="v">' + novedades + '</div><div class="l">Novedades</div><div class="d">reportadas por los guardias</div></div>' +
+      "</div></div></div>" +
+    '<div class="panel"><div class="panel-hd"><h2>Cobertura diaria</h2><span class="spacer"></span>' +
+      '<span class="hint">Porcentaje de puntos programados que fueron marcados cada día</span></div>' +
+      '<div class="panel-bd"><div class="chart-wrap" id="chartWrap">' + barras(serie) + '<div class="tip" id="tip"></div></div></div></div>' +
+    '<div class="cols">' +
+      '<div class="panel"><div class="panel-hd"><h2>Por guardia</h2></div>' +
+        (listaG.length ? '<div class="tw"><table><thead><tr><th>Guardia</th><th class="num">Rondas</th><th>Cobertura</th><th class="num">A tiempo</th><th class="num">Novedades</th></tr></thead><tbody>' +
+          listaG.map(g => {
+            const c = pct(g.marcadas, g.esperadas);
+            return "<tr><td><b>" + esc(g.nombre) + '</b></td><td class="num mono">' + g.rondas + "</td>" +
+              '<td><div style="display:flex;align-items:center;gap:9px"><div class="meter" style="flex:1"><i style="width:' + c + '%"></i></div>' +
+              '<span class="mono" style="font-size:13px;min-width:38px;text-align:right">' + c + "%</span></div></td>" +
+              '<td class="num mono">' + pct(g.aTiempo, g.marcadas) + "%</td>" +
+              '<td class="num mono">' + g.novedades + "</td></tr>";
+          }).join("") + "</tbody></table></div>"
+          : '<div class="empty"><strong>Sin datos</strong>No hay rondas registradas en el período.</div>') + "</div>" +
+      '<div class="panel"><div class="panel-hd"><h2>Puntos más omitidos</h2></div>' +
+        (listaO.length ? '<div class="tw"><table><thead><tr><th>Punto</th><th>Código</th><th class="num">Omisiones</th></tr></thead><tbody>' +
+          listaO.map(o => "<tr><td>" + esc(o.punto) + '</td><td><span class="pt-code">' + esc(o.codigo) + '</span></td><td class="num mono">' + o.n + "</td></tr>").join("") + "</tbody></table></div>"
+          : '<div class="empty"><strong>Ningún punto omitido</strong>Todas las rondas cerradas cubrieron su recorrido completo.</div>') + "</div>" +
+    "</div>";
+
+  $("#repSel").onchange = e => { state.repDias = parseInt(e.target.value, 10); render(); };
+  wireChart(serie);
+}
+
+function barPath(x, y, w, h, r) {
+  r = Math.min(r, h, w / 2);
+  if (h <= 0) return "";
+  return "M" + x + "," + (y + h) + "V" + (y + r) + "A" + r + "," + r + " 0 0 1 " + (x + r) + "," + y +
+         "H" + (x + w - r) + "A" + r + "," + r + " 0 0 1 " + (x + w) + "," + (y + r) + "V" + (y + h) + "Z";
+}
+
+function barras(serie) {
+  const W = 760, H = 210, ml = 36, mr = 10, mt = 12, mb = 30;
+  const pw = W - ml - mr, ph = H - mt - mb;
+  const n = serie.length || 1;
+  const paso = pw / n, gap = Math.min(8, paso * 0.28), bw = Math.max(4, paso - gap);
+  let g = "";
+  [0, 50, 100].forEach(v => {
+    const y = mt + ph - (v / 100) * ph;
+    g += '<line class="gridline" x1="' + ml + '" y1="' + y + '" x2="' + (W - mr) + '" y2="' + y + '"></line>' +
+         '<text class="axis-t" x="' + (ml - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + v + "</text>";
+  });
+  let b = "", hits = "", lab = "";
+  serie.forEach((d, i) => {
+    const x = ml + i * paso + gap / 2;
+    const v = d.val == null ? 0 : d.val;
+    const h = (v / 100) * ph;
+    const y = mt + ph - h;
+    b += '<path class="bar-bg" d="' + barPath(x, mt, bw, ph, 3) + '" opacity=".38"></path>';
+    if (d.val != null && h > 0) b += '<path class="bar" id="bar' + i + '" d="' + barPath(x, y, bw, h, 3) + '"></path>';
+    hits += '<rect class="hit" data-i="' + i + '" x="' + (ml + i * paso) + '" y="' + mt + '" width="' + paso + '" height="' + ph + '"></rect>';
+    const paso2 = Math.ceil(serie.length / 8);
+    if (i % paso2 === 0 || i === serie.length - 1) {
+      lab += '<text class="axis-t" x="' + (x + bw / 2) + '" y="' + (mt + ph + 18) + '" text-anchor="middle">' +
+        String(d.fecha.getDate()).padStart(2, "0") + "/" + String(d.fecha.getMonth() + 1).padStart(2, "0") + "</text>";
+    }
+  });
+  return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Cobertura diaria de puntos de control, en porcentaje">' +
+    g + b + lab + hits + "</svg>";
+}
+
+function wireChart(serie) {
+  const wrap = $("#chartWrap"); if (!wrap) return;
+  const tip = $("#tip"), svg = wrap.querySelector("svg");
+  $$(".hit", wrap).forEach(h => {
+    h.addEventListener("mouseenter", () => {
+      const d = serie[parseInt(h.dataset.i, 10)];
+      const bar = wrap.querySelector("#bar" + h.dataset.i);
+      if (bar) bar.style.fill = "var(--navy)";
+      tip.innerHTML = "<b>" + String(d.fecha.getDate()).padStart(2, "0") + "/" + String(d.fecha.getMonth() + 1).padStart(2, "0") + "</b> &middot; " +
+        (d.val == null ? "sin rondas" : d.val + "% cobertura<br>" + d.marcadas + " de " + d.esperadas + " puntos &middot; " + d.rondas + " ronda" + (d.rondas === 1 ? "" : "s"));
+      const r = h.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+      tip.style.left = (r.left - wr.left + r.width / 2) + "px";
+      tip.style.top = (r.top - wr.top + r.height * (1 - (d.val || 0) / 100)) + "px";
+      tip.style.opacity = "1";
+    });
+    h.addEventListener("mouseleave", () => {
+      const bar = wrap.querySelector("#bar" + h.dataset.i);
+      if (bar) bar.style.fill = "";
+      tip.style.opacity = "0";
+    });
+  });
+  if (svg) svg.addEventListener("mouseleave", () => { tip.style.opacity = "0"; });
+}
+
+/* ----- Configuración ----- */
+function renderConfig() {
+  const w = $("#cfgWrap");
+  w.innerHTML =
+    '<div class="panel"><div class="panel-hd"><h2>Instalación</h2></div><div class="panel-bd">' +
+      '<div class="row" style="align-items:flex-end">' +
+      '<label class="f">Nombre de la instalación<input id="cfgSitio" value="' + esc(state.sitio.nombre || "") + '"></label>' +
+      '<div style="flex:0 0 auto"><button class="btn" id="btnSitio">Guardar</button></div></div>' +
+      '<p class="hint" style="margin:12px 0 0">Registro: <b>' + (state.backend === "db" ? "compartido — todos los supervisores ven las marcas en vivo" : "local — los datos quedan sólo en este navegador") + "</b></p>" +
+      (vacio() ? '<div style="margin-top:14px;padding:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm)">' +
+        '<b>El registro está vacío.</b> <span class="hint">Puedes cargar una instalación de ejemplo con 8 puntos, 2 rutas y 4 guardias para probar la marcación, y editarla después.</span><br>' +
+        '<button class="btn btn-sm" id="btnSeed" style="margin-top:10px">Cargar datos de ejemplo</button></div>' : "") +
+    "</div></div>" +
+    '<div class="panel"><div class="panel-hd"><h2>Respaldo</h2></div><div class="panel-bd">' +
+      '<p class="hint" style="margin:0 0 13px">' + (state.backend === "db"
+        ? "Los datos viven en el registro compartido. Aun así conviene guardar una copia periódica de la bitácora."
+        : "<b>Los datos viven sólo en este navegador.</b> Si se borran los datos del sitio o se reinstala el equipo, la bitácora se pierde. Descarga un respaldo cada cierto tiempo.") + "</p>" +
+      '<div class="row" style="gap:10px">' +
+        '<div style="flex:0 0 auto"><button class="btn" id="btnBackup"' + (puedeDescargar() ? "" : " disabled") + ">Descargar respaldo</button></div>" +
+        '<div style="flex:0 0 auto"><button class="btn" id="btnRestore">Restaurar respaldo</button>' +
+          '<input type="file" id="fileRestore" accept="application/json,.json" hidden></div>' +
+      "</div></div></div>" +
+    '<div class="cfg-grid">' +
+      panelPuntos() + panelRutas() + panelGuardias() +
+    "</div>";
+
+  $("#btnSitio").onclick = () => guardarSitio($("#cfgSitio").value.trim() || "Instalación");
+  const sd = $("#btnSeed"); if (sd) sd.onclick = sembrar;
+  $("#btnBackup").onclick = respaldar;
+  $("#btnRestore").onclick = () => $("#fileRestore").click();
+  $("#fileRestore").onchange = e => { const f = e.target.files[0]; if (f) dlgRestaurar(f); e.target.value = ""; };
+  $("#btnNuevoP").onclick = () => dlgPunto(null);
+  $("#btnNuevoR").onclick = () => dlgRuta(null);
+  $("#btnNuevoG").onclick = () => dlgGuardia(null);
+  $$("[data-edit-p]", w).forEach(b => b.onclick = () => dlgPunto(byId(state.puntos, b.dataset.editP)));
+  $$("[data-edit-r]", w).forEach(b => b.onclick = () => dlgRuta(byId(state.rutas, b.dataset.editR)));
+  $$("[data-edit-g]", w).forEach(b => b.onclick = () => dlgGuardia(byId(state.guardias, b.dataset.editG)));
+}
+
+function panelPuntos() {
+  return '<div class="panel"><div class="panel-hd"><h2>Puntos de control</h2><span class="spacer"></span>' +
+    '<button class="btn btn-sm" id="btnNuevoP">Agregar</button></div>' +
+    (state.puntos.length ? '<ul class="pts">' + state.puntos.map(p =>
+      '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
+      '<div><div class="pt-nom">' + esc(p.nombre) + '<span class="pt-code">' + esc(p.codigo) + "</span>" +
+      (p.activo ? "" : '<span class="chip">Inactivo</span>') + "</div>" +
+      '<div class="pt-sub"><span>' + esc(p.zona) + "</span></div></div>" +
+      '<div class="pt-act"><button class="btn btn-sm" data-edit-p="' + p.id + '">Editar</button></div></li>').join("") + "</ul>"
+      : '<div class="empty"><strong>Sin puntos</strong>Agrega los lugares donde el guardia debe marcar.</div>') + "</div>";
+}
+
+function panelRutas() {
+  return '<div class="panel"><div class="panel-hd"><h2>Rutas</h2><span class="spacer"></span>' +
+    '<button class="btn btn-sm" id="btnNuevoR">Agregar</button></div>' +
+    (state.rutas.length ? '<ul class="pts">' + state.rutas.map(r =>
+      '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
+      '<div><div class="pt-nom">' + esc(r.nombre) + (r.activo ? "" : ' <span class="chip">Inactiva</span>') + "</div>" +
+      '<div class="pt-sub"><span>' + (r.puntos || []).length + " puntos</span><span>&plusmn;" + (r.toleranciaMin || 5) + " min</span>" +
+      "<span>" + (r.ordenEstricto ? "Orden estricto" : "Orden libre") + "</span></div></div>" +
+      '<div class="pt-act"><button class="btn btn-sm" data-edit-r="' + r.id + '">Editar</button></div></li>').join("") + "</ul>"
+      : '<div class="empty"><strong>Sin rutas</strong>Una ruta define el orden y los tiempos del recorrido.</div>') + "</div>";
+}
+
+function panelGuardias() {
+  return '<div class="panel"><div class="panel-hd"><h2>Personal</h2><span class="spacer"></span>' +
+    '<button class="btn btn-sm" id="btnNuevoG">Agregar</button></div>' +
+    (state.guardias.length ? '<ul class="pts">' + state.guardias.map(g =>
+      '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
+      '<div><div class="pt-nom">' + esc(g.nombre) + (g.activo ? "" : ' <span class="chip">Inactivo</span>') + "</div>" +
+      '<div class="pt-sub"><span class="mono">' + esc(g.rut || "—") + "</span><span>Turno " + esc(g.turno) + "</span></div></div>" +
+      '<div class="pt-act"><button class="btn btn-sm" data-edit-g="' + g.id + '">Editar</button></div></li>').join("") + "</ul>"
+      : '<div class="empty"><strong>Sin personal</strong>Registra a los guardias que realizarán las rondas.</div>') + "</div>";
+}
+
+const vacio = () => !state.puntos.length && !state.guardias.length && !state.rutas.length;
+
+async function respaldar() {
+  const d = { formato: "ronda-vigia-1", exportado: new Date().toISOString(), sitio: state.sitio };
+  COLS.forEach(c => d[c] = state[c]);
+  const ok = await descargar("respaldo-ronda-vigia-" + hoyKey() + ".json", JSON.stringify(d, null, 2), "application/json");
+  if (ok) avisar("Respaldo descargado (" + state.rondas.length + " rondas).");
+}
+
+function dlgRestaurar(file) {
+  const lector = new FileReader();
+  lector.onerror = () => avisar("No se pudo leer el archivo.", "bad");
+  lector.onload = () => {
+    let d = null;
+    try { d = JSON.parse(lector.result); } catch (e) { d = null; }
+    if (!d || !Array.isArray(d.puntos) || !Array.isArray(d.guardias) || !Array.isArray(d.rutas) || !Array.isArray(d.rondas)) {
+      avisar("Ese archivo no es un respaldo de Ronda Vigía.", "bad");
+      return;
+    }
+    abrirDlg('<div class="dlg-hd"><h3>Restaurar respaldo</h3></div><div class="dlg-bd">' +
+      '<div style="padding:12px;background:var(--bad-bg);color:var(--bad);border-radius:var(--r-sm)">' +
+        "<b>Esto reemplaza todo lo que hay ahora.</b> La configuración y la bitácora actuales se pierden.</div>" +
+      "<p style=\"margin:0\">El respaldo contiene:</p>" +
+      '<ul style="margin:0;padding-left:20px;line-height:1.7">' +
+        "<li>" + d.puntos.length + " puntos de control</li><li>" + d.rutas.length + " rutas</li>" +
+        "<li>" + d.guardias.length + " guardias</li><li>" + d.rondas.length + " rondas registradas</li></ul>" +
+      (d.exportado ? '<p class="hint" style="margin:0">Exportado el ' + fmtFC(d.exportado) + " a las " + fmtHora(d.exportado) + ".</p>" : "") +
+      "</div>" +
+      '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
+        '<button class="btn btn-danger" id="btnRest">Reemplazar todo</button></div>');
+    $("#btnRest").onclick = async () => {
+      dlg.close();
+      avisar("Restaurando…");
+      if (d.sitio && d.sitio.nombre) await guardarSitio(d.sitio.nombre);
+      for (const col of COLS) {
+        for (const doc of d[col]) { if (doc && doc.id) await guardar(col, doc); }
+      }
+      avisar("Respaldo restaurado.", "hv");
+    };
+  };
+  lector.readAsText(file);
+}
+
+async function sembrar() {
+  const ej = datosEjemplo();
+  for (const p of ej.puntos) await guardar("puntos", p);
+  for (const g of ej.guardias) await guardar("guardias", g);
+  for (const r of ej.rutas) await guardar("rutas", r);
+  await guardarSitio(ej.sitio.nombre);
+  avisar("Instalación de ejemplo cargada.", "hv");
+}
+
+/* ---------------- diálogos ---------------- */
+const dlg = $("#dlg");
+function abrirDlg(html) {
+  dlg.innerHTML = html;
+  if (!dlg.open) dlg.showModal();
+  const c = dlg.querySelector("[data-cerrar]");
+  if (c) c.onclick = () => dlg.close();
+}
+/* El evento close es asíncrono: sólo vaciamos si no se abrió otro diálogo entretanto. */
+dlg.addEventListener("close", () => { if (!dlg.open) dlg.innerHTML = ""; });
+
+function dlgMarcar(ronda, ruta, punto, metodo) {
+  const manual = metodo === "manual";
+  abrirDlg(
+    '<div class="dlg-hd"><h3>' + (manual ? "Marca manual" : "Registrar punto") + "</h3></div>" +
+    '<div class="dlg-bd">' +
+      '<div><div class="eyebrow">Punto ' + (punto.idx + 1) + '</div><div style="font-size:19px;font-weight:600">' + esc(punto.nombre) +
+        ' <span class="pt-code">' + esc(punto.codigo) + "</span></div>" +
+        '<div class="hint">' + esc(punto.zona) + " &middot; programado en el minuto " + punto.minuto + " de la ronda</div></div>" +
+      (manual ? '<p class="hint" style="margin:0;padding:10px 12px;background:var(--warn-bg);border-radius:var(--r-sm);color:var(--warn)">' +
+        "Se registrará como <b>marca manual</b>: queda marcada en la bitácora porque no se leyó el código del punto. Indica el motivo.</p>" : "") +
+      '<div><div class="eyebrow" style="margin-bottom:6px">Estado del punto</div><div class="seg" id="segNov">' +
+        '<button type="button" data-nov="0" aria-pressed="true">Sin novedad</button>' +
+        '<button type="button" class="nov" data-nov="1" aria-pressed="false">Con novedad</button></div></div>' +
+      '<label class="f">Observación' + (manual ? " (obligatoria)" : "") +
+        '<textarea id="mNota" placeholder="' + (manual ? "Motivo de la marca manual" : "Opcional: qué se observó en el punto") + '"></textarea></label>' +
+      '<div><button class="btn btn-sm" id="btnGps">Adjuntar ubicación</button> <span class="hint" id="gpsTxt">Sin ubicación</span></div>' +
+    "</div>" +
+    '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
+      '<button class="btn btn-hv" id="btnOk">Registrar marca</button></div>');
+
+  let novedad = false, coords = null;
+  $$("#segNov button").forEach(b => b.onclick = () => {
+    novedad = b.dataset.nov === "1";
+    $$("#segNov button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  });
+  $("#btnGps").onclick = () => {
+    const t = $("#gpsTxt");
+    if (!navigator.geolocation) { t.textContent = "El dispositivo no entrega ubicación."; return; }
+    t.textContent = "Obteniendo ubicación…";
+    navigator.geolocation.getCurrentPosition(
+      p => { coords = p.coords.latitude.toFixed(5) + ", " + p.coords.longitude.toFixed(5); t.textContent = coords; },
+      () => { t.textContent = "No se pudo obtener la ubicación."; },
+      { timeout: 8000 });
+  };
+  $("#btnOk").onclick = () => {
+    const nota = $("#mNota").value.trim();
+    if (manual && !nota) { avisar("Indica el motivo de la marca manual.", "bad"); $("#mNota").focus(); return; }
+    registrarMarca(ronda, ruta, punto, { metodo, novedad, nota, coords });
+    dlg.close();
+  };
+}
+
+function dlgFinalizar(r) {
+  const ruta = byId(state.rutas, r.rutaId);
+  const pts = puntosDeRuta(ruta);
+  const faltan = pts.filter(p => !marcaEnIdx(r, p.idx));
+  abrirDlg(
+    '<div class="dlg-hd"><h3>Cerrar ronda</h3></div><div class="dlg-bd">' +
+      "<p style=\"margin:0\">Ronda <b>" + esc(r.rutaNombre) + "</b> de <b>" + esc(r.guardiaNombre) + "</b>, iniciada a las " +
+      '<span class="mono">' + fmtHora(r.inicio) + "</span>.</p>" +
+      (faltan.length
+        ? '<div style="padding:12px;background:var(--bad-bg);color:var(--bad);border-radius:var(--r-sm)">' +
+          "<b>" + faltan.length + (faltan.length === 1 ? " punto quedará como omitido" : " puntos quedarán como omitidos") + ":</b><br>" +
+          faltan.map(p => esc(p.codigo) + " " + esc(p.nombre)).join("<br>") + "</div>"
+        : '<div style="padding:12px;background:var(--ok-bg);color:var(--ok);border-radius:var(--r-sm)"><b>Recorrido completo:</b> los ' + pts.length + " puntos fueron marcados.</div>") +
+      '<label class="f">Observación de cierre<textarea id="fNota" placeholder="Novedades del turno, entrega a relevo, etc."></textarea></label>' +
+    "</div>" +
+    '<div class="dlg-ft"><button class="btn" data-cerrar>Volver</button>' +
+      '<button class="btn btn-navy" id="btnCerrar">Cerrar ronda</button></div>');
+  $("#btnCerrar").onclick = () => {
+    const obs = $("#fNota").value.trim();
+    const nr = Object.assign({}, r, { estado: "finalizada", fin: new Date().toISOString(), observacion: obs });
+    guardar("rondas", nr);
+    dlg.close();
+    avisar("Ronda cerrada" + (faltan.length ? " con " + faltan.length + " omisión(es)." : " sin omisiones."), faltan.length ? "bad" : "");
+  };
+}
+
+function dlgPunto(p) {
+  const n = !p;
+  abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nuevo punto" : "Editar punto") + "</h3></div>" +
+    '<div class="dlg-bd">' +
+      '<label class="f">Código del tag<input id="pC" value="' + esc(p ? p.codigo : "") + '" placeholder="PC-09" class="mono"></label>' +
+      '<label class="f">Nombre<input id="pN" value="' + esc(p ? p.nombre : "") + '" placeholder="Cerco oriente"></label>' +
+      '<label class="f">Zona<input id="pZ" value="' + esc(p ? p.zona : "") + '" placeholder="Perímetro"></label>' +
+      '<label class="f chk" style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">' +
+        '<input type="checkbox" id="pA"' + (!p || p.activo ? " checked" : "") + "> Punto activo</label>" +
+    "</div>" +
+    '<div class="dlg-ft">' + (n ? "" : '<button class="btn btn-danger" id="btnDel" style="margin-right:auto">Eliminar</button>') +
+      '<button class="btn" data-cerrar>Cancelar</button><button class="btn btn-navy" id="btnOk">Guardar</button></div>');
+  $("#btnOk").onclick = () => {
+    const cod = $("#pC").value.trim().toUpperCase(), nom = $("#pN").value.trim();
+    if (!cod || !nom) { avisar("El código y el nombre son obligatorios.", "bad"); return; }
+    const dup = state.puntos.find(x => x.codigo.toUpperCase() === cod && (!p || x.id !== p.id));
+    if (dup) { avisar("Ya existe un punto con el código " + cod + ".", "bad"); return; }
+    guardar("puntos", { id: p ? p.id : uid("p"), codigo: cod, nombre: nom, zona: $("#pZ").value.trim() || "General", activo: $("#pA").checked });
+    dlg.close();
+  };
+  const d = $("#btnDel");
+  if (d) d.onclick = () => { borrar("puntos", p.id); dlg.close(); avisar("Punto eliminado."); };
+}
+
+function dlgGuardia(g) {
+  const n = !g;
+  abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nuevo guardia" : "Editar guardia") + "</h3></div>" +
+    '<div class="dlg-bd">' +
+      '<label class="f">Nombre completo<input id="gN" value="' + esc(g ? g.nombre : "") + '"></label>' +
+      '<label class="f">Documento de identidad<input id="gR" value="' + esc(g ? g.rut : "") + '" class="mono"></label>' +
+      '<label class="f">Turno<select id="gT">' + ["Día", "Tarde", "Noche"].map(t =>
+        '<option' + (g && g.turno === t ? " selected" : "") + ">" + t + "</option>").join("") + "</select></label>" +
+      '<label class="f chk" style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">' +
+        '<input type="checkbox" id="gA"' + (!g || g.activo ? " checked" : "") + "> En servicio</label>" +
+    "</div>" +
+    '<div class="dlg-ft">' + (n ? "" : '<button class="btn btn-danger" id="btnDel" style="margin-right:auto">Eliminar</button>') +
+      '<button class="btn" data-cerrar>Cancelar</button><button class="btn btn-navy" id="btnOk">Guardar</button></div>');
+  $("#btnOk").onclick = () => {
+    const nom = $("#gN").value.trim();
+    if (!nom) { avisar("El nombre es obligatorio.", "bad"); return; }
+    guardar("guardias", { id: g ? g.id : uid("g"), nombre: nom, rut: $("#gR").value.trim(), turno: $("#gT").value, activo: $("#gA").checked });
+    dlg.close();
+  };
+  const d = $("#btnDel");
+  if (d) d.onclick = () => { borrar("guardias", g.id); dlg.close(); avisar("Guardia eliminado."); };
+}
+
+function dlgRuta(r) {
+  const n = !r;
+  /* Un recorrido es una lista ordenada de tramos: el mismo punto puede repetirse
+     (por ejemplo, salir y volver a portería), así que se edita por tramo, no por punto. */
+  const tramos = (r ? r.puntos || [] : []).map(x => ({ puntoId: x.puntoId, minuto: x.minuto }));
+  if (!tramos.length && state.puntos.length) tramos.push({ puntoId: state.puntos[0].id, minuto: 0 });
+
+  abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nueva ruta" : "Editar ruta") + "</h3></div>" +
+    '<div class="dlg-bd">' +
+      '<label class="f">Nombre de la ruta<input id="rN" value="' + esc(r ? r.nombre : "") + '" placeholder="Perimetral nocturna"></label>' +
+      '<div class="row">' +
+        '<label class="f">Tolerancia (min)<input type="number" min="0" max="60" id="rT" value="' + (r ? r.toleranciaMin || 5 : 5) + '"></label>' +
+        '<label class="f chk" style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);align-self:flex-end;padding-bottom:10px">' +
+          '<input type="checkbox" id="rO"' + (r && r.ordenEstricto ? " checked" : "") + "> Exigir orden estricto</label>" +
+      "</div>" +
+      '<div><div class="eyebrow" style="margin-bottom:8px">Tramos del recorrido</div>' +
+        '<div id="tramos" style="display:flex;flex-direction:column;gap:7px"></div>' +
+        '<button class="btn btn-sm" id="btnAddTramo" style="margin-top:9px">Agregar tramo</button></div>' +
+      '<p class="hint" style="margin:0">El minuto se cuenta desde el inicio de la ronda. Un mismo punto puede aparecer varias veces; los tramos se ordenan por minuto al guardar.</p>' +
+    "</div>" +
+    '<div class="dlg-ft">' + (n ? "" : '<button class="btn btn-danger" id="btnDel" style="margin-right:auto">Eliminar</button>') +
+      '<button class="btn" data-cerrar>Cancelar</button><button class="btn btn-navy" id="btnOk">Guardar</button></div>');
+
+  function pintarTramos() {
+    const cont = $("#tramos");
+    if (!state.puntos.length) {
+      cont.innerHTML = '<p class="hint">Primero registra puntos de control.</p>';
+      return;
+    }
+    cont.innerHTML = tramos.map((t, i) =>
+      '<div class="pick"><span class="ord">' + (i + 1) + "</span>" +
+      '<select data-tp="' + i + '" aria-label="Punto de control del tramo ' + (i + 1) + '">' +
+        state.puntos.map(p => '<option value="' + p.id + '"' + (p.id === t.puntoId ? " selected" : "") + ">" +
+          esc(p.codigo) + " &middot; " + esc(p.nombre) + "</option>").join("") + "</select>" +
+      '<input type="number" min="0" step="1" data-tm="' + i + '" value="' + t.minuto + '" aria-label="Minuto programado del tramo ' + (i + 1) + '">' +
+      '<button type="button" class="btn btn-sm x" data-tx="' + i + '" aria-label="Quitar tramo ' + (i + 1) + '">&times;</button></div>').join("");
+
+    $$("[data-tp]", cont).forEach(s => s.onchange = () => { tramos[+s.dataset.tp].puntoId = s.value; });
+    $$("[data-tm]", cont).forEach(i => i.oninput = () => { tramos[+i.dataset.tm].minuto = parseInt(i.value, 10) || 0; });
+    $$("[data-tx]", cont).forEach(b => b.onclick = () => { tramos.splice(+b.dataset.tx, 1); pintarTramos(); });
+  }
+  pintarTramos();
+
+  $("#btnAddTramo").onclick = () => {
+    if (!state.puntos.length) { avisar("Primero registra puntos de control.", "bad"); return; }
+    const ult = tramos[tramos.length - 1];
+    tramos.push({ puntoId: state.puntos[0].id, minuto: ult ? ult.minuto + 8 : 0 });
+    pintarTramos();
+  };
+
+  $("#btnOk").onclick = () => {
+    const nom = $("#rN").value.trim();
+    if (!nom) { avisar("El nombre de la ruta es obligatorio.", "bad"); return; }
+    if (!tramos.length) { avisar("La ruta necesita al menos un tramo.", "bad"); return; }
+    const puntos = tramos.map(t => ({ puntoId: t.puntoId, minuto: t.minuto }))
+      .sort((a, b) => a.minuto - b.minuto);
+    guardar("rutas", { id: r ? r.id : uid("r"), nombre: nom, toleranciaMin: parseInt($("#rT").value, 10) || 0,
+      ordenEstricto: $("#rO").checked, activo: r ? r.activo !== false : true, puntos });
+    dlg.close();
+  };
+  const d = $("#btnDel");
+  if (d) d.onclick = () => { borrar("rutas", r.id); dlg.close(); avisar("Ruta eliminada."); };
+}
+
+/* ---------------- acciones ---------------- */
+function iniciarRonda(guardiaId, rutaId) {
+  if (rondaActiva()) { avisar("Ya hay una ronda en curso. Ciérrala antes de iniciar otra.", "bad"); return; }
+  const g = byId(state.guardias, guardiaId), rt = byId(state.rutas, rutaId);
+  if (!g || !rt) { avisar("Selecciona un guardia y una ruta válidos.", "bad"); return; }
+  guardar("rondas", { id: uid("rd"), rutaId, guardiaId, rutaNombre: rt.nombre, guardiaNombre: g.nombre,
+    inicio: new Date().toISOString(), fin: null, estado: "en_curso", totalPuntos: (rt.puntos || []).length,
+    marcas: [], observacion: "" });
+  avisar("Ronda iniciada: " + rt.nombre + ".", "hv");
+}
+
+function registrarPorCodigo() {
+  const inp = $("#codigoIn");
+  const cod = (inp.value || "").trim().toUpperCase();
+  if (!cod) { inp.focus(); return; }
+  const r = rondaActiva();
+  if (!r) return;
+  const ruta = byId(state.rutas, r.rutaId);
+  const pts = puntosDeRuta(ruta);
+  const pend = pts.filter(p => !marcaEnIdx(r, p.idx) && p.codigo.toUpperCase() === cod);
+
+  if (!pend.length) {
+    const enRuta = pts.some(p => p.codigo.toUpperCase() === cod);
+    avisar(enRuta ? "El punto " + cod + " ya fue marcado en esta ronda." : "El código " + cod + " no pertenece a esta ruta.", "bad");
+    inp.select();
+    return;
+  }
+  const sig = proximoIdx(r, ruta);
+  const objetivo = pend[0];
+  if (ruta.ordenEstricto && objetivo.idx !== sig) {
+    const esperado = pts.find(p => p.idx === sig);
+    avisar("Orden estricto: corresponde marcar " + esperado.codigo + " " + esperado.nombre + ".", "bad");
+    inp.select();
+    return;
+  }
+  inp.value = "";
+  dlgMarcar(r, ruta, objetivo, "codigo");
+}
+
+function registrarMarca(ronda, ruta, punto, opts) {
+  const actual = byId(state.rondas, ronda.id) || ronda;
+  if (actual.estado !== "en_curso") { avisar("La ronda ya fue cerrada.", "bad"); return; }
+  if (marcaEnIdx(actual, punto.idx)) { avisar("Ese punto ya está marcado.", "bad"); return; }
+  const hora = new Date().toISOString();
+  const tol = ruta ? (ruta.toleranciaMin || 5) : 5;
+  const ev = estadoMarca(actual, punto.minuto, hora, tol);
+  const marca = { idx: punto.idx, puntoId: punto.puntoId, codigo: punto.codigo, nombre: punto.nombre, zona: punto.zona,
+    minutoEsperado: punto.minuto, hora, estado: ev.estado, desfase: ev.desfase,
+    metodo: opts.metodo, novedad: !!opts.novedad, nota: opts.nota || "", coords: opts.coords || null };
+  const nr = Object.assign({}, actual, { marcas: marcasDe(actual).concat([marca]) });
+  guardar("rondas", nr);
+  const et = (ESTADOS[ev.estado] || {}).txt || ev.estado;
+  avisar(punto.codigo + " registrado a las " + fmtHora(hora) + " — " + et + (opts.novedad ? " con novedad" : "") + ".", opts.novedad ? "bad" : "hv");
+  const inp = $("#codigoIn"); if (inp) inp.focus();
+}
+
+/* ---------------- navegación y reloj ---------------- */
+$$(".tab").forEach(t => t.onclick = () => {
+  state.vista = t.id.replace("tab-", "");
+  $$(".tab").forEach(x => x.setAttribute("aria-selected", String(x === t)));
+  $$(".view").forEach(v => v.hidden = v.id !== "v-" + state.vista);
+});
+
+function reloj() {
+  const n = new Date();
+  $("#reloj").textContent = HMS.format(n);
+  const f = FECHA.format(n);
+  $("#fecha").textContent = f.charAt(0).toUpperCase() + f.slice(1);
+}
+reloj();
+setInterval(reloj, 1000);
+
+/* ---------------- instalable en el teléfono ----------------
+   Sólo fuera de Claude: alojada en un sitio propio, la página se instala
+   en la pantalla de inicio de Android e iOS y funciona sin señal. */
+let promptInstalar = null;
+if (!window.claude) {
+  /* El paquete web ya trae estas etiquetas en el <head>; esto sólo cubre
+     el archivo suelto, sin duplicar nada. */
+  const cab = document.head;
+  const poner = (sel, crear) => { if (!cab.querySelector(sel)) cab.appendChild(crear()); };
+  poner('link[rel="manifest"]', () => { const e = document.createElement("link"); e.rel = "manifest"; e.href = "manifest.webmanifest"; return e; });
+  poner('meta[name="theme-color"]', () => { const e = document.createElement("meta"); e.name = "theme-color"; e.content = "#1B2E45"; return e; });
+  poner('link[rel="apple-touch-icon"]', () => { const e = document.createElement("link"); e.rel = "apple-touch-icon"; e.href = "apple-touch-icon.png"; return e; });
+  poner('meta[name="apple-mobile-web-app-capable"]', () => { const e = document.createElement("meta"); e.name = "apple-mobile-web-app-capable"; e.content = "yes"; return e; });
+  poner('meta[name="apple-mobile-web-app-title"]', () => { const e = document.createElement("meta"); e.name = "apple-mobile-web-app-title"; e.content = "Ronda Vigía"; return e; });
+
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault(); promptInstalar = e;
+    const b = $("#btnInstalar"); if (b) b.hidden = false;
+  });
+  window.addEventListener("appinstalled", () => { const b = $("#btnInstalar"); if (b) b.hidden = true; });
+}
+$("#btnInstalar").onclick = async () => {
+  if (!promptInstalar) return;
+  promptInstalar.prompt();
+  await promptInstalar.userChoice;
+  promptInstalar = null;
+  $("#btnInstalar").hidden = true;
+};
+
+/* ---------------- arranque ---------------- */
+cargarLocal();
+marcarLink();
+render();
+conectar();
+</script>
+
+</body>
+</html>
