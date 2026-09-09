@@ -284,6 +284,31 @@ dialog::backdrop{background:rgba(10,16,22,.55)}
 .geo{font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
 .geo a{color:var(--focus)}
 
+/* ---------- pantalla de acceso ---------- */
+#acceso{position:fixed;inset:0;z-index:80;background:var(--navy);display:grid;place-items:center;padding:22px;overflow-y:auto}
+#acceso[hidden]{display:none}
+.acceso-caja{width:100%;max-width:390px;background:var(--surface);border-radius:var(--r);padding:24px;
+  display:flex;flex-direction:column;gap:14px;box-shadow:0 24px 60px -20px rgba(0,0,0,.55)}
+.acceso-marca{display:flex;align-items:center;gap:12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.acceso-marca .brand-name{color:var(--ink);font-size:21px}
+.acceso-marca .brand-sub{color:var(--muted)}
+.acceso-caja h2{font-size:21px;letter-spacing:.05em;text-transform:uppercase;margin-top:4px}
+.acceso-caja .btn-lg{justify-content:center;margin-top:4px}
+.acceso-err{margin:0;padding:9px 11px;border-radius:var(--r-sm);background:var(--bad-bg);color:var(--bad);
+  font-size:13.5px;font-weight:600}
+.acceso-err[hidden]{display:none}
+.acceso-nota{margin:0;font-size:11.5px;line-height:1.5;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+
+/* ---------- sesión en la barra superior ---------- */
+.sesion{display:flex;align-items:center;gap:9px}
+.sesion .quien{text-align:right;line-height:1.2}
+.sesion .quien b{display:block;font-size:13.5px;color:var(--on-navy)}
+.sesion .quien span{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#9DB0C4}
+.selinst{background:#16283C;color:#E9EEF4;border:1px solid #33475D;border-radius:var(--r-sm);
+  padding:7px 10px;font-size:13.5px;max-width:220px;width:auto}
+.solo-lectura{background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:var(--r-sm);
+  padding:11px 13px;font-size:13.5px;color:var(--ink-2)}
+
 /* ---------- etiquetas QR para imprimir ---------- */
 .hoja{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
 .etq{border:1.5px dashed var(--line-strong);border-radius:var(--r-sm);padding:12px;text-align:center;background:#fff;color:#141B23}
@@ -318,6 +343,7 @@ dialog::backdrop{background:rgba(10,16,22,.55)}
     </div>
     <div class="sitio" id="sitio">Cargando instalación…</div>
     <div class="clock mono"><span id="reloj">--:--:--</span><small id="fecha">—</small></div>
+    <div class="sesion" id="sesion"></div>
     <button class="btn btn-hv btn-sm" id="btnInstalar" hidden>Instalar app</button>
     <span class="link-state"><span class="dot" id="linkDot"></span><span id="linkTxt">Conectando</span></span>
   </div>
@@ -357,6 +383,7 @@ dialog::backdrop{background:rgba(10,16,22,.55)}
 </main>
 
 <dialog id="dlg"></dialog>
+<div id="acceso" hidden></div>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -392,6 +419,9 @@ const chipEstado = (e) => {
 
 /* ---------------- datos de ejemplo (sólo modo local) ---------------- */
 function datosEjemplo() {
+  const INS = "ins_demo";
+  const inst = [{ id: INS, nombre: "Planta San Bernardo", cliente: "Alimentos del Maipo S.A.",
+                  direccion: "Camino Lo Blanco 1240, San Bernardo", activa: true }];
   const g = [
     /* Personal de ejemplo. Sin documento de identidad a propósito: son
        personas ficticias y un RUT inventado puede coincidir con alguien real. */
@@ -418,20 +448,158 @@ function datosEjemplo() {
       puntos: [{ puntoId: "p1", minuto: 0 }, { puntoId: "p3", minuto: 10 }, { puntoId: "p4", minuto: 18 },
                { puntoId: "p8", minuto: 26 }] }
   ];
-  return { guardias: g, puntos: p, rutas: r, rondas: [], sitio: { nombre: "Planta San Bernardo" } };
+  g.forEach(x => x.instalaciones = [INS]);
+  p.forEach(x => x.instalacionId = INS);
+  r.forEach(x => x.instalacionId = INS);
+  return { instalaciones: inst, usuarios: [], guardias: g, puntos: p, rutas: r, rondas: [],
+           sitio: { nombre: "Planta San Bernardo" } };
+}
+
+/* Los datos creados antes de que existieran las instalaciones no tienen a cuál
+   pertenecen. Se crea una con el nombre del sitio y se les asigna. */
+async function migrar() {
+  if (state.migrado || !state.resuelto) return;
+  const huerfanos = ["puntos", "rutas", "rondas"].some(c => state[c].some(d => !d.instalacionId)) ||
+                    state.guardias.some(g => !g.instalaciones);
+  if (!state.instalaciones.length && !huerfanos) return;   /* instalación vacía y sin datos previos */
+  state.migrado = true;
+
+  let prim = state.instalaciones[0];
+  if (!prim) {
+    prim = { id: uid("ins"), nombre: (state.sitio && state.sitio.nombre) || "Instalación principal",
+             cliente: "", direccion: "", activa: true };
+    await guardar("instalaciones", prim);
+  }
+  for (const col of ["puntos", "rutas", "rondas"]) {
+    for (const d of state[col].slice()) {
+      if (!d.instalacionId) await guardar(col, Object.assign({}, d, { instalacionId: prim.id }));
+    }
+  }
+  for (const g of state.guardias.slice()) {
+    if (!g.instalaciones) await guardar("guardias", Object.assign({}, g, { instalaciones: [prim.id] }));
+  }
 }
 
 /* ---------------- estado ---------------- */
-const COLS = ["guardias", "puntos", "rutas", "rondas"];
+const COLS = ["instalaciones", "usuarios", "guardias", "puntos", "rutas", "rondas"];
 const state = {
-  guardias: [], puntos: [], rutas: [], rondas: [],
+  instalaciones: [], usuarios: [], guardias: [], puntos: [], rutas: [], rondas: [],
   sitio: { nombre: "Instalación" },
   vista: "ronda",
   backend: "local",
   resuelto: false,
   localDirty: false,
+  migrado: false,
+  sesion: null,          /* usuario con sesión iniciada */
+  instalacionId: "",     /* instalación que se está mirando */
   filtros: { dias: "7", guardia: "", ruta: "", soloNovedades: false },
   repDias: 14
+};
+
+/* ================= CUENTAS Y ROLES =================
+   Aviso honesto: esto separa vistas y evita errores, NO es seguridad. Todo
+   corre en el navegador, así que un usuario decidido puede saltárselo. Para
+   claves de verdad hace falta un servidor que valide del otro lado. */
+const ROLES = {
+  admin:   { txt: "Administrador", cls: "hv"   },
+  guardia: { txt: "Guardia",       cls: ""     },
+  cliente: { txt: "Cliente",       cls: "ok"   }
+};
+
+const SESION_K = "ronda_vigia_sesion";
+
+async function hashClave(clave, sal) {
+  try {
+    if (crypto && crypto.subtle) {
+      const enc = new TextEncoder();
+      const k = await crypto.subtle.importKey("raw", enc.encode(clave), "PBKDF2", false, ["deriveBits"]);
+      const bits = await crypto.subtle.deriveBits(
+        { name: "PBKDF2", salt: enc.encode(sal), iterations: 120000, hash: "SHA-256" }, k, 256);
+      return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+  } catch (e) { /* sin WebCrypto (por ejemplo abriendo el archivo suelto) */ }
+  let h = 0;
+  const s = sal + "|" + clave;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return "d" + (h >>> 0).toString(16);
+}
+
+const normUsuario = u => String(u || "").trim().toLowerCase();
+const usuarioPorNombre = u => state.usuarios.find(x => normUsuario(x.usuario) === normUsuario(u)) || null;
+
+async function crearUsuario(datos, clave) {
+  const sal = uid("s");
+  return Object.assign({ id: datos.id || uid("u"), sal, hash: await hashClave(clave, sal) }, datos);
+}
+
+async function verificarClave(usuario, clave) {
+  if (!usuario || !usuario.sal) return false;
+  return (await hashClave(clave, usuario.sal)) === usuario.hash;
+}
+
+function abrirSesion(u) {
+  state.sesion = u;
+  try { localStorage.setItem(SESION_K, u.id); } catch (e) {}
+  const permitidas = instalacionesDe(u);
+  state.instalacionId = permitidas.length ? permitidas[0].id : "";
+  state.vista = u.rol === "guardia" ? "ronda" : (u.rol === "cliente" ? "reportes" : "ronda");
+  render();
+}
+
+function cerrarSesion() {
+  state.sesion = null;
+  try { localStorage.removeItem(SESION_K); } catch (e) {}
+  render();
+}
+
+function recuperarSesion() {
+  let id = null;
+  try { id = localStorage.getItem(SESION_K); } catch (e) {}
+  if (!id) return;
+  const u = byId(state.usuarios, id);
+  if (u && u.activo !== false) {
+    state.sesion = u;
+    const permitidas = instalacionesDe(u);
+    if (!state.instalacionId || !permitidas.some(i => i.id === state.instalacionId)) {
+      state.instalacionId = permitidas.length ? permitidas[0].id : "";
+    }
+    if (u.rol === "cliente" && state.vista === "ronda") state.vista = "reportes";
+  }
+}
+
+const rol = () => state.sesion ? state.sesion.rol : null;
+const esAdmin = () => rol() === "admin";
+const esGuardia = () => rol() === "guardia";
+const esCliente = () => rol() === "cliente";
+
+/* Qué instalaciones puede ver quien tiene la sesión abierta. */
+function instalacionesDe(u) {
+  const act = state.instalaciones.filter(i => i.activa !== false);
+  if (!u) return [];
+  if (u.rol === "admin") return act;
+  const ids = u.instalaciones || [];
+  return act.filter(i => ids.includes(i.id));
+}
+/* Nunca se filtra por state.instalacionId a secas: si apunta a una instalación
+   que la sesión no tiene asignada (valor obsoleto, error de código), se cae a la
+   primera permitida. Así un cliente no puede terminar viendo otra instalación. */
+function instalacionEfectiva() {
+  const permitidas = instalacionesDe(state.sesion);
+  if (!permitidas.length) return " ninguna";
+  return permitidas.some(i => i.id === state.instalacionId) ? state.instalacionId : permitidas[0].id;
+}
+const instalacionActual = () => byId(state.instalaciones, instalacionEfectiva());
+
+/* Filtros por instalación: todas las vistas trabajan sobre la activa. */
+const puntosVis = () => { const i = instalacionEfectiva(); return state.puntos.filter(p => p.instalacionId === i); };
+const rutasVis = () => { const i = instalacionEfectiva(); return state.rutas.filter(r => r.instalacionId === i); };
+const guardiasVis = () => { const i = instalacionEfectiva(); return state.guardias.filter(g => (g.instalaciones || []).includes(i)); };
+
+/* El guardia ve sólo sus propias rondas; el admin y el cliente, todas las de la instalación. */
+const miGuardiaId = () => (state.sesion && state.sesion.rol === "guardia") ? (state.sesion.guardiaId || "") : "";
+const rondasVis = () => {
+  const i = instalacionEfectiva();
+  return state.rondas.filter(r => r.instalacionId === i && (!esGuardia() || r.guardiaId === miGuardiaId()));
 };
 let DB = null;
 let DOWN = null;
@@ -533,7 +701,7 @@ function marcarLink() {
 }
 
 /* ---------------- dominio ---------------- */
-const rondaActiva = () => state.rondas.find(r => r.estado === "en_curso") || null;
+const rondaActiva = () => rondasVis().find(r => r.estado === "en_curso") || null;
 
 function puntosDeRuta(ruta) {
   if (!ruta) return [];
@@ -574,7 +742,7 @@ function resumenRonda(r) {
 /* filas planas de la bitácora, más recientes primero */
 function bitacora() {
   const filas = [];
-  state.rondas.forEach(r => {
+  rondasVis().forEach(r => {
     const ruta = byId(state.rutas, r.rutaId);
     const g = byId(state.guardias, r.guardiaId);
     const pts = puntosDeRuta(ruta);
@@ -804,6 +972,76 @@ function avisar(msg, tipo) {
   toastT = setTimeout(() => { t.className = ""; }, 3600);
 }
 
+/* ================= PANTALLA DE ACCESO ================= */
+function pintarAcceso() {
+  const cap = $("#acceso");
+  const hayUsuarios = state.usuarios.length > 0;
+  cap.hidden = false;
+
+  cap.innerHTML =
+    '<div class="acceso-caja">' +
+      '<div class="acceso-marca">' +
+        '<svg width="44" height="50" viewBox="0 0 30 34" aria-hidden="true">' +
+          '<path d="M15 1.5 28 6v11.2C28 25 22.4 30.6 15 32.5 7.6 30.6 2 25 2 17.2V6z" fill="#E3C400"/>' +
+          '<path d="M15 5 24.6 8.3v8.9c0 5.9-4.1 10.2-9.6 11.7-5.5-1.5-9.6-5.8-9.6-11.7V8.3z" fill="#1B2E45"/>' +
+          '<circle cx="15" cy="17" r="5.6" fill="none" stroke="#E3C400" stroke-width="1.8"/>' +
+          '<path d="M15 13.4V17l2.6 1.6" fill="none" stroke="#E3C400" stroke-width="1.8" stroke-linecap="round"/>' +
+        "</svg>" +
+        "<div><div class=\"brand-name\">Ronda Vigía</div><div class=\"brand-sub\">Control de rondas</div></div>" +
+      "</div>" +
+      (hayUsuarios
+        ? "<h2>Iniciar sesión</h2>" +
+          '<label class="f">Usuario<input id="acUser" autocomplete="username" autocapitalize="none" spellcheck="false"></label>' +
+          '<label class="f">Clave<input id="acClave" type="password" autocomplete="current-password"></label>' +
+          '<button class="btn btn-hv btn-lg" id="acEntrar">Entrar</button>'
+        : "<h2>Crear administrador</h2>" +
+          '<p class="hint" style="margin:0">Es la primera vez que se abre en este equipo. Crea tu cuenta de administrador; desde ella das de alta a los guardias y a los clientes.</p>' +
+          '<label class="f">Tu nombre<input id="acNombre" autocomplete="name"></label>' +
+          '<label class="f">Usuario<input id="acUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="admin"></label>' +
+          '<label class="f">Clave<input id="acClave" type="password" autocomplete="new-password"></label>' +
+          '<label class="f">Repite la clave<input id="acClave2" type="password" autocomplete="new-password"></label>' +
+          '<button class="btn btn-hv btn-lg" id="acCrear">Crear y entrar</button>') +
+      '<p class="acceso-err" id="acErr" hidden></p>' +
+      '<p class="acceso-nota">Las claves separan lo que ve cada persona y evitan cambios por descuido. ' +
+        "No protegen frente a alguien que quiera saltárselas a propósito: para eso hace falta un servidor.</p>" +
+    "</div>";
+
+  const err = m => { const e = $("#acErr"); e.textContent = m; e.hidden = false; };
+
+  if (hayUsuarios) {
+    const entrar = async () => {
+      const u = usuarioPorNombre($("#acUser").value);
+      const clave = $("#acClave").value;
+      if (!u || u.activo === false) { err("Usuario o clave incorrectos."); return; }
+      if (!(await verificarClave(u, clave))) { err("Usuario o clave incorrectos."); return; }
+      if (u.rol !== "admin" && !instalacionesDe(u).length) {
+        err("Tu cuenta no tiene ninguna instalación asignada. Pide al administrador que te asigne una.");
+        return;
+      }
+      cap.hidden = true;
+      abrirSesion(u);
+    };
+    $("#acEntrar").onclick = entrar;
+    $("#acClave").addEventListener("keydown", e => { if (e.key === "Enter" || e.keyCode === 13) entrar(); });
+    $("#acUser").focus();
+  } else {
+    $("#acCrear").onclick = async () => {
+      const nombre = $("#acNombre").value.trim();
+      const usuario = $("#acUser").value.trim();
+      const c1 = $("#acClave").value, c2 = $("#acClave2").value;
+      if (!nombre || !usuario) { err("Completa tu nombre y el usuario."); return; }
+      if (c1.length < 4) { err("La clave debe tener al menos 4 caracteres."); return; }
+      if (c1 !== c2) { err("Las dos claves no coinciden."); return; }
+      const u = await crearUsuario({ nombre, usuario, rol: "admin", instalaciones: [], activo: true }, c1);
+      await guardar("usuarios", u);
+      cap.hidden = true;
+      abrirSesion(u);
+      avisar("Administrador creado. Ya puedes dar de alta guardias y clientes.", "hv");
+    };
+    $("#acNombre").focus();
+  }
+}
+
 /* ---------------- render ---------------- */
 let tickT = null;
 function render() {
@@ -811,13 +1049,17 @@ function render() {
   const foco = act && act.id ? { id: act.id, ini: act.selectionStart, fin: act.selectionEnd } : null;
   soltarUrls();   /* las miniaturas del repintado anterior ya no se usan */
 
+  /* Sin sesión no se pinta nada del interior. */
+  if (!state.sesion) { if (state.resuelto) pintarAcceso(); return; }
+  $("#acceso").hidden = true;
+
+  pintarSesion();
   renderRonda();
   renderTurno();
   renderBitacora();
   renderReportes();
   renderConfig();
 
-  $("#sitio").textContent = state.sitio && state.sitio.nombre ? state.sitio.nombre : "Instalación";
   const nov = bitacora().filter(x => (x.novedad || x.estado === "omitido") && new Date(x.hora) >= new Date(Date.now() - 7 * 864e5)).length;
   const b = $("#bdgNov");
   b.textContent = nov;
@@ -835,6 +1077,46 @@ function render() {
 }
 
 function bloqueado() { return !state.resuelto; }
+
+/* Qué pestañas ve cada rol. El cliente no marca; el guardia no configura. */
+const PERMISOS = {
+  admin:   ["ronda", "bitacora", "reportes", "config"],
+  guardia: ["ronda", "bitacora"],
+  cliente: ["bitacora", "reportes"]
+};
+
+function pintarSesion() {
+  const u = state.sesion;
+  const permitidas = instalacionesDe(u);
+
+  /* selector de instalación (o el nombre, si sólo tiene una) */
+  const cont = $("#sitio");
+  if (permitidas.length > 1) {
+    cont.innerHTML = '<select class="selinst" id="selInst" aria-label="Instalación">' +
+      permitidas.map(i => '<option value="' + i.id + '"' + (i.id === state.instalacionId ? " selected" : "") + ">" +
+        esc(i.nombre) + "</option>").join("") + "</select>";
+    $("#selInst").onchange = e => { state.instalacionId = e.target.value; render(); };
+  } else {
+    const i = instalacionActual();
+    cont.textContent = i ? i.nombre : (permitidas.length ? permitidas[0].nombre : "Sin instalación");
+  }
+
+  const r = ROLES[u.rol] || { txt: u.rol };
+  $("#sesion").innerHTML =
+    '<div class="quien"><b>' + esc(u.nombre) + "</b><span>" + esc(r.txt) + "</span></div>" +
+    '<button class="btn btn-sm" id="btnSalir">Salir</button>';
+  $("#btnSalir").onclick = cerrarSesion;
+
+  /* pestañas según el rol */
+  const puede = PERMISOS[u.rol] || [];
+  $$(".tab").forEach(t => {
+    const v = t.id.replace("tab-", "");
+    t.hidden = !puede.includes(v);
+  });
+  if (!puede.includes(state.vista)) state.vista = puede[0] || "bitacora";
+  $$(".tab").forEach(t => t.setAttribute("aria-selected", String(t.id === "tab-" + state.vista)));
+  $$(".view").forEach(v => v.hidden = v.id !== "v-" + state.vista);
+}
 
 /* ----- vista Ronda ----- */
 function renderRonda() {
@@ -933,18 +1215,27 @@ function pintarMiniaturas(raiz) {
 }
 
 function panelInicio() {
-  const gs = state.guardias.filter(g => g.activo);
-  const rs = state.rutas.filter(r => r.activo && (r.puntos || []).length);
+  const rs = rutasVis().filter(r => r.activo && (r.puntos || []).length);
+  const propio = esGuardia() ? byId(state.guardias, miGuardiaId()) : null;
+  const gs = esGuardia() ? (propio ? [propio] : []) : guardiasVis().filter(g => g.activo);
+
   if (!gs.length || !rs.length) {
+    const falta = esGuardia() && !propio
+      ? "Tu cuenta no está vinculada a ninguna ficha de personal. Pide al administrador que la corrija."
+      : "Registra al menos " + (!gs.length ? "un guardia" : "") + (!gs.length && !rs.length ? " y " : "") +
+        (!rs.length ? "una ruta con puntos" : "") + " en la pestaña Configuración.";
     return '<div class="panel"><div class="panel-hd"><h2>Iniciar ronda</h2></div>' +
-      '<div class="empty"><strong>Falta configuración</strong>' +
-      "Registra al menos " + (!gs.length ? "un guardia" : "") + (!gs.length && !rs.length ? " y " : "") +
-      (!rs.length ? "una ruta con puntos" : "") + " en la pestaña Configuración.</div></div>";
+      '<div class="empty"><strong>Falta configuración</strong>' + esc(falta) + "</div></div>";
   }
   return '<div class="panel"><div class="panel-hd"><h2>Iniciar ronda</h2></div><div class="panel-bd">' +
-    '<p class="hint" style="margin:0 0 16px">Selecciona quién sale a ronda y qué recorrido hará. El cronómetro parte al confirmar y cada punto se compara con su minuto programado.</p>' +
+    '<p class="hint" style="margin:0 0 16px">' + (esGuardia()
+      ? "Elige el recorrido. El cronómetro parte al confirmar y cada punto se compara con su minuto programado."
+      : "Selecciona quién sale a ronda y qué recorrido hará. El cronómetro parte al confirmar y cada punto se compara con su minuto programado.") + "</p>" +
     '<div class="row">' +
-      '<label class="f">Guardia<select id="selG">' + gs.map(g => '<option value="' + g.id + '">' + esc(g.nombre) + " &mdash; turno " + esc(g.turno) + "</option>").join("") + "</select></label>" +
+      (esGuardia()
+        ? '<label class="f">Guardia<input value="' + esc(propio.nombre) + '" disabled>' +
+          '<input type="hidden" id="selG" value="' + propio.id + '"></label>'
+        : '<label class="f">Guardia<select id="selG">' + gs.map(g => '<option value="' + g.id + '">' + esc(g.nombre) + " &mdash; turno " + esc(g.turno) + "</option>").join("") + "</select></label>") +
       '<label class="f">Ruta<select id="selR">' + rs.map(r => '<option value="' + r.id + '">' + esc(r.nombre) + " (" + (r.puntos || []).length + " puntos)</option>").join("") + "</select></label>" +
     "</div>" +
     '<div style="margin-top:16px"><button class="btn btn-hv btn-lg" id="btnIniciar"' + (bloqueado() ? " disabled" : "") + ">Iniciar ronda</button></div>" +
@@ -960,7 +1251,7 @@ function wireInicio() {
 function renderTurno() {
   const cont = $("#colTurno");
   const hoy = hoyKey();
-  const deHoy = state.rondas.filter(r => diaKey(r.inicio) === hoy);
+  const deHoy = rondasVis().filter(r => diaKey(r.inicio) === hoy);
   let marcadas = 0, esperadas = 0, novedades = 0, omitidos = 0;
   deHoy.forEach(r => { const s = resumenRonda(r); marcadas += s.marcadas; esperadas += s.total; novedades += s.novedades; omitidos += s.omitidos; });
 
@@ -1005,9 +1296,9 @@ function renderBitacora() {
     '<label class="f">Período<select id="fDias">' +
       ["7", "30", "90", "todo"].map(d => '<option value="' + d + '"' + (f.dias === d ? " selected" : "") + ">" + (d === "todo" ? "Todo el registro" : "Últimos " + d + " días") + "</option>").join("") + "</select></label>" +
     '<label class="f">Guardia<select id="fG"><option value="">Todos</option>' +
-      state.guardias.map(g => '<option value="' + g.id + '"' + (f.guardia === g.id ? " selected" : "") + ">" + esc(g.nombre) + "</option>").join("") + "</select></label>" +
+      guardiasVis().map(g => '<option value="' + g.id + '"' + (f.guardia === g.id ? " selected" : "") + ">" + esc(g.nombre) + "</option>").join("") + "</select></label>" +
     '<label class="f">Ruta<select id="fR"><option value="">Todas</option>' +
-      state.rutas.map(r => '<option value="' + r.id + '"' + (f.ruta === r.id ? " selected" : "") + ">" + esc(r.nombre) + "</option>").join("") + "</select></label>" +
+      rutasVis().map(r => '<option value="' + r.id + '"' + (f.ruta === r.id ? " selected" : "") + ">" + esc(r.nombre) + "</option>").join("") + "</select></label>" +
     '<label class="f chk"><input type="checkbox" id="fN"' + (f.soloNovedades ? " checked" : "") + "> Sólo novedades y omisiones</label>" +
     '<div style="margin-left:auto;display:flex;gap:8px"><button class="btn" id="btnCsv"' + (puedeDescargar() ? "" : " disabled title=\"La descarga no está disponible en esta vista\"") + ">Exportar CSV</button></div>";
 
@@ -1081,7 +1372,7 @@ async function descargar(nombre, texto, tipo) {
 function renderReportes() {
   const dias = state.repDias;
   const desde = new Date(Date.now() - dias * 864e5);
-  const rondas = state.rondas.filter(r => new Date(r.inicio) >= desde);
+  const rondas = rondasVis().filter(r => new Date(r.inicio) >= desde);
   let esperadas = 0, marcadas = 0, aTiempo = 0, novedades = 0, omitidos = 0;
   rondas.forEach(r => { const s = resumenRonda(r); esperadas += s.total; marcadas += s.marcadas; aTiempo += s.aTiempo; novedades += s.novedades; omitidos += s.omitidos; });
   const cumpl = pct(marcadas, esperadas);
@@ -1092,7 +1383,7 @@ function renderReportes() {
   for (let i = dias - 1; i >= 0; i--) {
     const d = new Date(Date.now() - i * 864e5);
     const k = diaKey(d);
-    const rs = state.rondas.filter(r => diaKey(r.inicio) === k);
+    const rs = rondasVis().filter(r => diaKey(r.inicio) === k);
     let e = 0, m = 0;
     rs.forEach(r => { const s = resumenRonda(r); e += s.total; m += s.marcadas; });
     serie.push({ k, fecha: d, val: e ? pct(m, e) : null, rondas: rs.length, marcadas: m, esperadas: e });
@@ -1218,10 +1509,16 @@ function wireChart(serie) {
 function renderConfig() {
   const w = $("#cfgWrap");
   w.innerHTML =
-    '<div class="panel"><div class="panel-hd"><h2>Instalación</h2></div><div class="panel-bd">' +
-      '<div class="row" style="align-items:flex-end">' +
-      '<label class="f">Nombre de la instalación<input id="cfgSitio" value="' + esc(state.sitio.nombre || "") + '"></label>' +
-      '<div style="flex:0 0 auto"><button class="btn" id="btnSitio">Guardar</button></div></div>' +
+    '<div class="panel"><div class="panel-hd"><h2>Instalación en pantalla</h2><span class="spacer"></span>' +
+      (instalacionActual() ? '<button class="btn btn-sm" id="btnEditInst">Editar esta instalación</button>' : "") + "</div>" +
+      '<div class="panel-bd">' +
+      (instalacionActual()
+        ? '<div style="font-size:19px;font-weight:600">' + esc(instalacionActual().nombre) + "</div>" +
+          '<div class="hint" style="margin-top:3px">' + esc(instalacionActual().cliente || "Sin cliente asignado") +
+          (instalacionActual().direccion ? " &middot; " + esc(instalacionActual().direccion) : "") + "</div>" +
+          '<p class="hint" style="margin:10px 0 0">Los puntos, rutas y personal que edites abajo pertenecen a esta instalación. ' +
+          "Cambia de instalación con el selector de la barra superior.</p>"
+        : '<p class="hint" style="margin:0">No hay ninguna instalación seleccionada. Crea una en el panel de Instalaciones.</p>') +
       '<p class="hint" style="margin:12px 0 0">Registro: <b>' + (state.backend === "db" ? "compartido — todos los supervisores ven las marcas en vivo" : "local — los datos quedan sólo en este navegador") + "</b></p>" +
       (vacio() ? '<div style="margin-top:14px;padding:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm)">' +
         '<b>El registro está vacío.</b> <span class="hint">Puedes cargar una instalación de ejemplo con 8 puntos, 2 rutas y 4 guardias para probar la marcación, y editarla después.</span><br>' +
@@ -1239,10 +1536,13 @@ function renderConfig() {
       '<p class="hint" id="espacio" style="margin:12px 0 0">Calculando espacio usado…</p>' +
       "</div></div>" +
     '<div class="cfg-grid">' +
+      panelInstalaciones() + panelUsuarios() +
+    "</div>" +
+    '<div class="cfg-grid">' +
       panelPuntos() + panelRutas() + panelGuardias() +
     "</div>";
 
-  $("#btnSitio").onclick = () => guardarSitio($("#cfgSitio").value.trim() || "Instalación");
+  const be = $("#btnEditInst"); if (be) be.onclick = () => dlgInstalacion(instalacionActual());
   const sd = $("#btnSeed"); if (sd) sd.onclick = sembrar;
   $("#btnBackup").onclick = respaldar;
   $("#btnRestore").onclick = () => $("#fileRestore").click();
@@ -1252,15 +1552,19 @@ function renderConfig() {
   $("#btnNuevoP").onclick = () => dlgPunto(null);
   $("#btnNuevoR").onclick = () => dlgRuta(null);
   $("#btnNuevoG").onclick = () => dlgGuardia(null);
+  $("#btnNuevaI").onclick = () => dlgInstalacion(null);
+  $("#btnNuevoU").onclick = () => dlgUsuario(null);
   $$("[data-edit-p]", w).forEach(b => b.onclick = () => dlgPunto(byId(state.puntos, b.dataset.editP)));
   $$("[data-edit-r]", w).forEach(b => b.onclick = () => dlgRuta(byId(state.rutas, b.dataset.editR)));
   $$("[data-edit-g]", w).forEach(b => b.onclick = () => dlgGuardia(byId(state.guardias, b.dataset.editG)));
+  $$("[data-edit-i]", w).forEach(b => b.onclick = () => dlgInstalacion(byId(state.instalaciones, b.dataset.editI)));
+  $$("[data-edit-u]", w).forEach(b => b.onclick = () => dlgUsuario(byId(state.usuarios, b.dataset.editU)));
 }
 
 /* Etiquetas QR para imprimir y pegar en cada punto: sin ellas el lector no
    sirve de nada, porque no hay qué escanear. */
 async function dlgEtiquetas() {
-  const activos = state.puntos.filter(p => p.activo);
+  const activos = puntosVis().filter(p => p.activo);
   if (!activos.length) { avisar("No hay puntos de control activos.", "bad"); return; }
   abrirDlg('<div class="dlg-hd"><h3>Etiquetas QR</h3></div>' +
     '<div class="dlg-bd"><p style="margin:0">Se generará una etiqueta por cada uno de los ' + activos.length +
@@ -1306,11 +1610,46 @@ async function dlgEtiquetas() {
   };
 }
 
+function panelInstalaciones() {
+  return '<div class="panel"><div class="panel-hd"><h2>Instalaciones</h2><span class="spacer"></span>' +
+    '<button class="btn btn-sm" id="btnNuevaI">Agregar</button></div>' +
+    (state.instalaciones.length ? '<ul class="pts">' + state.instalaciones.map(i => {
+      const np = state.puntos.filter(p => p.instalacionId === i.id).length;
+      const nr = state.rutas.filter(r => r.instalacionId === i.id).length;
+      return '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
+        '<div><div class="pt-nom">' + esc(i.nombre) +
+        (i.id === state.instalacionId ? ' <span class="chip hv">Activa</span>' : "") +
+        (i.activa === false ? ' <span class="chip">Inactiva</span>' : "") + "</div>" +
+        '<div class="pt-sub"><span>' + esc(i.cliente || "Sin cliente") + "</span>" +
+        "<span>" + np + " puntos</span><span>" + nr + " rutas</span></div></div>" +
+        '<div class="pt-act"><button class="btn btn-sm" data-edit-i="' + i.id + '">Editar</button></div></li>';
+    }).join("") + "</ul>"
+      : '<div class="empty"><strong>Sin instalaciones</strong>Cada instalación es un sitio con sus propios puntos, rutas y cliente.</div>') + "</div>";
+}
+
+function panelUsuarios() {
+  return '<div class="panel"><div class="panel-hd"><h2>Usuarios</h2><span class="spacer"></span>' +
+    '<button class="btn btn-sm" id="btnNuevoU">Agregar</button></div>' +
+    '<ul class="pts">' + state.usuarios.map(u => {
+      const r = ROLES[u.rol] || { txt: u.rol, cls: "" };
+      const insts = u.rol === "admin" ? "Todas las instalaciones"
+        : (u.instalaciones || []).map(id => { const i = byId(state.instalaciones, id); return i ? i.nombre : "?"; }).join(", ") || "Sin instalación asignada";
+      return '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
+        '<div><div class="pt-nom">' + esc(u.nombre) + ' <span class="chip ' + r.cls + '">' + r.txt + "</span>" +
+        (u.activo === false ? ' <span class="chip">Inhabilitado</span>' : "") +
+        (state.sesion && u.id === state.sesion.id ? ' <span class="chip ok">Tú</span>' : "") + "</div>" +
+        '<div class="pt-sub"><span class="mono">' + esc(u.usuario) + "</span><span>" + esc(insts) + "</span></div></div>" +
+        '<div class="pt-act"><button class="btn btn-sm" data-edit-u="' + u.id + '">Editar</button></div></li>';
+    }).join("") + "</ul>" +
+    '<div class="panel-bd" style="border-top:1px solid var(--line)"><p class="hint" style="margin:0">' +
+      "Las claves separan lo que ve cada persona y evitan cambios por descuido. No resisten a alguien que quiera saltárselas: para eso hace falta un servidor.</p></div></div>";
+}
+
 function panelPuntos() {
   return '<div class="panel"><div class="panel-hd"><h2>Puntos de control</h2><span class="spacer"></span>' +
     '<button class="btn btn-sm" id="btnEtiquetas">Etiquetas QR</button>' +
     '<button class="btn btn-sm" id="btnNuevoP">Agregar</button></div>' +
-    (state.puntos.length ? '<ul class="pts">' + state.puntos.map(p =>
+    (puntosVis().length ? '<ul class="pts">' + puntosVis().map(p =>
       '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
       '<div><div class="pt-nom">' + esc(p.nombre) + '<span class="pt-code">' + esc(p.codigo) + "</span>" +
       (p.activo ? "" : '<span class="chip">Inactivo</span>') + "</div>" +
@@ -1322,7 +1661,7 @@ function panelPuntos() {
 function panelRutas() {
   return '<div class="panel"><div class="panel-hd"><h2>Rutas</h2><span class="spacer"></span>' +
     '<button class="btn btn-sm" id="btnNuevoR">Agregar</button></div>' +
-    (state.rutas.length ? '<ul class="pts">' + state.rutas.map(r =>
+    (rutasVis().length ? '<ul class="pts">' + rutasVis().map(r =>
       '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
       '<div><div class="pt-nom">' + esc(r.nombre) + (r.activo ? "" : ' <span class="chip">Inactiva</span>') + "</div>" +
       '<div class="pt-sub"><span>' + (r.puntos || []).length + " puntos</span><span>&plusmn;" + (r.toleranciaMin || 5) + " min</span>" +
@@ -1334,7 +1673,7 @@ function panelRutas() {
 function panelGuardias() {
   return '<div class="panel"><div class="panel-hd"><h2>Personal</h2><span class="spacer"></span>' +
     '<button class="btn btn-sm" id="btnNuevoG">Agregar</button></div>' +
-    (state.guardias.length ? '<ul class="pts">' + state.guardias.map(g =>
+    (guardiasVis().length ? '<ul class="pts">' + guardiasVis().map(g =>
       '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
       '<div><div class="pt-nom">' + esc(g.nombre) + (g.activo ? "" : ' <span class="chip">Inactivo</span>') + "</div>" +
       '<div class="pt-sub"><span class="mono">' + esc(g.rut || "—") + "</span><span>Turno " + esc(g.turno) + "</span></div></div>" +
@@ -1342,7 +1681,7 @@ function panelGuardias() {
       : '<div class="empty"><strong>Sin personal</strong>Registra a los guardias que realizarán las rondas.</div>') + "</div>";
 }
 
-const vacio = () => !state.puntos.length && !state.guardias.length && !state.rutas.length;
+const vacio = () => !puntosVis().length && !guardiasVis().length && !rutasVis().length;
 
 const mb = b => (b / 1048576).toFixed(1) + " MB";
 const pesoTxt = b => b < 1048576 ? Math.max(1, Math.round(b / 1024)) + " KB" : (b / 1048576).toFixed(1) + " MB";
@@ -1448,11 +1787,13 @@ function dlgRestaurar(file) {
 
 async function sembrar() {
   const ej = datosEjemplo();
+  for (const i of ej.instalaciones) await guardar("instalaciones", i);
+  state.instalacionId = ej.instalaciones[0].id;
   for (const p of ej.puntos) await guardar("puntos", p);
   for (const g of ej.guardias) await guardar("guardias", g);
   for (const r of ej.rutas) await guardar("rutas", r);
-  await guardarSitio(ej.sitio.nombre);
   avisar("Instalación de ejemplo cargada.", "hv");
+  render();
 }
 
 /* ---------------- diálogos ---------------- */
@@ -1685,6 +2026,127 @@ function dlgFinalizar(r) {
   };
 }
 
+function dlgInstalacion(i) {
+  const n = !i;
+  abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nueva instalación" : "Editar instalación") + "</h3></div>" +
+    '<div class="dlg-bd">' +
+      '<label class="f">Nombre de la instalación<input id="iN" value="' + esc(i ? i.nombre : "") + '" placeholder="Planta San Bernardo"></label>' +
+      '<label class="f">Cliente<input id="iC" value="' + esc(i ? i.cliente || "" : "") + '" placeholder="Alimentos del Maipo S.A."></label>' +
+      '<label class="f">Dirección<input id="iD" value="' + esc(i ? i.direccion || "" : "") + '"></label>' +
+      '<label class="f chk" style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">' +
+        '<input type="checkbox" id="iA"' + (!i || i.activa !== false ? " checked" : "") + "> Instalación activa</label>" +
+    "</div>" +
+    '<div class="dlg-ft">' + (n ? "" : '<button class="btn btn-danger" id="btnDel" style="margin-right:auto">Eliminar</button>') +
+      '<button class="btn" data-cerrar>Cancelar</button><button class="btn btn-navy" id="btnOk">Guardar</button></div>');
+  $("#btnOk").onclick = async () => {
+    const nom = $("#iN").value.trim();
+    if (!nom) { avisar("El nombre de la instalación es obligatorio.", "bad"); return; }
+    const nueva = { id: i ? i.id : uid("ins"), nombre: nom, cliente: $("#iC").value.trim(),
+                    direccion: $("#iD").value.trim(), activa: $("#iA").checked };
+    await guardar("instalaciones", nueva);
+    if (!i) { state.instalacionId = nueva.id; avisar("Instalación creada y seleccionada.", "hv"); }
+    dlg.close();
+    render();
+  };
+  const d = $("#btnDel");
+  if (d) d.onclick = () => {
+    const np = state.puntos.filter(p => p.instalacionId === i.id).length;
+    const nr = state.rondas.filter(r => r.instalacionId === i.id).length;
+    if (np || nr) { avisar("No se puede eliminar: tiene " + np + " puntos y " + nr + " rondas. Márcala como inactiva.", "bad"); return; }
+    borrar("instalaciones", i.id);
+    if (state.instalacionId === i.id) state.instalacionId = "";
+    dlg.close();
+    avisar("Instalación eliminada.");
+  };
+}
+
+function dlgUsuario(u) {
+  const n = !u;
+  const yo = state.sesion && u && u.id === state.sesion.id;
+  const insts = state.instalaciones.filter(i => i.activa !== false);
+  const sel = u ? (u.instalaciones || []) : (instalacionEfectiva() ? [instalacionEfectiva()] : []);
+  const roles = [["guardia", "Guardia — marca puntos en su ronda"],
+                 ["cliente", "Cliente — sólo consulta su instalación"],
+                 ["admin", "Administrador — acceso completo"]];
+
+  abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nuevo usuario" : "Editar usuario") + "</h3></div>" +
+    '<div class="dlg-bd">' +
+      '<label class="f">Nombre completo<input id="uN" value="' + esc(u ? u.nombre : "") + '"></label>' +
+      '<label class="f">Usuario para entrar<input id="uU" class="mono" autocapitalize="none" spellcheck="false" value="' + esc(u ? u.usuario : "") + '"></label>' +
+      '<label class="f">Rol<select id="uR"' + (yo ? " disabled" : "") + ">" +
+        roles.map(([v, t]) => '<option value="' + v + '"' + (u && u.rol === v ? " selected" : "") + ">" + t + "</option>").join("") + "</select></label>" +
+      '<div id="uInsts"><div class="eyebrow" style="margin-bottom:7px">Instalaciones a las que accede</div>' +
+        (insts.length ? '<div style="display:flex;flex-direction:column;gap:6px">' + insts.map(i =>
+          '<label class="pick" style="cursor:pointer"><input type="checkbox" data-ui="' + i.id + '"' +
+          (sel.includes(i.id) ? " checked" : "") + '><span class="nm">' + esc(i.nombre) +
+          "<small>" + esc(i.cliente || "sin cliente") + "</small></span></label>").join("") + "</div>"
+          : '<p class="hint">Primero crea una instalación.</p>') + "</div>" +
+      '<label class="f">' + (n ? "Clave" : "Clave nueva (déjala vacía para no cambiarla)") +
+        '<input id="uC" type="password" autocomplete="new-password"></label>' +
+      '<label class="f chk" style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">' +
+        '<input type="checkbox" id="uA"' + (!u || u.activo !== false ? " checked" : "") + (yo ? " disabled" : "") + "> Cuenta habilitada</label>" +
+    "</div>" +
+    '<div class="dlg-ft">' + (n || yo ? "" : '<button class="btn btn-danger" id="btnDel" style="margin-right:auto">Eliminar</button>') +
+      '<button class="btn" data-cerrar>Cancelar</button><button class="btn btn-navy" id="btnOk">Guardar</button></div>');
+
+  const pintarInsts = () => { $("#uInsts").style.display = $("#uR").value === "admin" ? "none" : ""; };
+  $("#uR").onchange = pintarInsts;
+  pintarInsts();
+
+  $("#btnOk").onclick = async () => {
+    const nombre = $("#uN").value.trim();
+    const usuario = $("#uU").value.trim();
+    const clave = $("#uC").value;
+    const rolSel = $("#uR").value;
+    if (!nombre || !usuario) { avisar("El nombre y el usuario son obligatorios.", "bad"); return; }
+    const choca = state.usuarios.find(x => normUsuario(x.usuario) === normUsuario(usuario) && (!u || x.id !== u.id));
+    if (choca) { avisar("Ya existe un usuario « " + usuario + " ».", "bad"); return; }
+    if (n && clave.length < 4) { avisar("La clave debe tener al menos 4 caracteres.", "bad"); return; }
+    if (!n && clave && clave.length < 4) { avisar("La clave nueva debe tener al menos 4 caracteres.", "bad"); return; }
+
+    const elegidas = $$("[data-ui]", dlg).filter(c => c.checked).map(c => c.dataset.ui);
+    if (rolSel !== "admin" && !elegidas.length) { avisar("Asigna al menos una instalación.", "bad"); return; }
+
+    let guardiaId = u ? u.guardiaId || "" : "";
+    if (rolSel === "guardia" && !guardiaId) {
+      /* La cuenta del guardia necesita su ficha de personal para atribuir las rondas. */
+      const g = { id: uid("g"), instalaciones: elegidas, nombre, rut: "", turno: "Noche", activo: true };
+      await guardar("guardias", g);
+      guardiaId = g.id;
+    }
+    if (rolSel === "guardia" && guardiaId) {
+      const g = byId(state.guardias, guardiaId);
+      if (g) await guardar("guardias", Object.assign({}, g, { nombre, instalaciones: elegidas, activo: $("#uA").checked }));
+    }
+
+    const base = { id: u ? u.id : uid("u"), nombre, usuario, rol: rolSel,
+                   instalaciones: rolSel === "admin" ? [] : elegidas,
+                   guardiaId: rolSel === "guardia" ? guardiaId : "",
+                   activo: yo ? true : $("#uA").checked };
+    let doc;
+    if (clave) {
+      doc = await crearUsuario(base, clave);
+    } else {
+      doc = Object.assign({}, base, { sal: u.sal, hash: u.hash });
+    }
+    await guardar("usuarios", doc);
+    if (yo) state.sesion = doc;
+    dlg.close();
+    avisar(n ? "Usuario creado." : "Usuario actualizado.", "hv");
+  };
+
+  const d = $("#btnDel");
+  if (d) d.onclick = () => {
+    if (u.rol === "admin" && state.usuarios.filter(x => x.rol === "admin" && x.activo !== false).length <= 1) {
+      avisar("No puedes eliminar al único administrador.", "bad");
+      return;
+    }
+    borrar("usuarios", u.id);
+    dlg.close();
+    avisar("Usuario eliminado.");
+  };
+}
+
 function dlgPunto(p) {
   const n = !p;
   abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nuevo punto" : "Editar punto") + "</h3></div>" +
@@ -1700,9 +2162,10 @@ function dlgPunto(p) {
   $("#btnOk").onclick = () => {
     const cod = $("#pC").value.trim().toUpperCase(), nom = $("#pN").value.trim();
     if (!cod || !nom) { avisar("El código y el nombre son obligatorios.", "bad"); return; }
-    const dup = state.puntos.find(x => x.codigo.toUpperCase() === cod && (!p || x.id !== p.id));
+    const dup = puntosVis().find(x => x.codigo.toUpperCase() === cod && (!p || x.id !== p.id));
     if (dup) { avisar("Ya existe un punto con el código " + cod + ".", "bad"); return; }
-    guardar("puntos", { id: p ? p.id : uid("p"), codigo: cod, nombre: nom, zona: $("#pZ").value.trim() || "General", activo: $("#pA").checked });
+    guardar("puntos", { id: p ? p.id : uid("p"), instalacionId: p ? p.instalacionId : instalacionEfectiva(),
+      codigo: cod, nombre: nom, zona: $("#pZ").value.trim() || "General", activo: $("#pA").checked });
     dlg.close();
   };
   const d = $("#btnDel");
@@ -1725,7 +2188,10 @@ function dlgGuardia(g) {
   $("#btnOk").onclick = () => {
     const nom = $("#gN").value.trim();
     if (!nom) { avisar("El nombre es obligatorio.", "bad"); return; }
-    guardar("guardias", { id: g ? g.id : uid("g"), nombre: nom, rut: $("#gR").value.trim(), turno: $("#gT").value, activo: $("#gA").checked });
+    const insts = g ? (g.instalaciones || []) : [];
+    if (instalacionEfectiva() && !insts.includes(instalacionEfectiva())) insts.push(instalacionEfectiva());
+    guardar("guardias", { id: g ? g.id : uid("g"), instalaciones: insts, nombre: nom,
+      rut: $("#gR").value.trim(), turno: $("#gT").value, activo: $("#gA").checked });
     dlg.close();
   };
   const d = $("#btnDel");
@@ -1737,7 +2203,7 @@ function dlgRuta(r) {
   /* Un recorrido es una lista ordenada de tramos: el mismo punto puede repetirse
      (por ejemplo, salir y volver a portería), así que se edita por tramo, no por punto. */
   const tramos = (r ? r.puntos || [] : []).map(x => ({ puntoId: x.puntoId, minuto: x.minuto }));
-  if (!tramos.length && state.puntos.length) tramos.push({ puntoId: state.puntos[0].id, minuto: 0 });
+  if (!tramos.length && puntosVis().length) tramos.push({ puntoId: puntosVis()[0].id, minuto: 0 });
 
   abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nueva ruta" : "Editar ruta") + "</h3></div>" +
     '<div class="dlg-bd">' +
@@ -1757,14 +2223,14 @@ function dlgRuta(r) {
 
   function pintarTramos() {
     const cont = $("#tramos");
-    if (!state.puntos.length) {
+    if (!puntosVis().length) {
       cont.innerHTML = '<p class="hint">Primero registra puntos de control.</p>';
       return;
     }
     cont.innerHTML = tramos.map((t, i) =>
       '<div class="pick"><span class="ord">' + (i + 1) + "</span>" +
       '<select data-tp="' + i + '" aria-label="Punto de control del tramo ' + (i + 1) + '">' +
-        state.puntos.map(p => '<option value="' + p.id + '"' + (p.id === t.puntoId ? " selected" : "") + ">" +
+        puntosVis().map(p => '<option value="' + p.id + '"' + (p.id === t.puntoId ? " selected" : "") + ">" +
           esc(p.codigo) + " &middot; " + esc(p.nombre) + "</option>").join("") + "</select>" +
       '<input type="number" min="0" step="1" data-tm="' + i + '" value="' + t.minuto + '" aria-label="Minuto programado del tramo ' + (i + 1) + '">' +
       '<button type="button" class="btn btn-sm x" data-tx="' + i + '" aria-label="Quitar tramo ' + (i + 1) + '">&times;</button></div>').join("");
@@ -1776,9 +2242,9 @@ function dlgRuta(r) {
   pintarTramos();
 
   $("#btnAddTramo").onclick = () => {
-    if (!state.puntos.length) { avisar("Primero registra puntos de control.", "bad"); return; }
+    if (!puntosVis().length) { avisar("Primero registra puntos de control.", "bad"); return; }
     const ult = tramos[tramos.length - 1];
-    tramos.push({ puntoId: state.puntos[0].id, minuto: ult ? ult.minuto + 8 : 0 });
+    tramos.push({ puntoId: puntosVis()[0].id, minuto: ult ? ult.minuto + 8 : 0 });
     pintarTramos();
   };
 
@@ -1788,7 +2254,8 @@ function dlgRuta(r) {
     if (!tramos.length) { avisar("La ruta necesita al menos un tramo.", "bad"); return; }
     const puntos = tramos.map(t => ({ puntoId: t.puntoId, minuto: t.minuto }))
       .sort((a, b) => a.minuto - b.minuto);
-    guardar("rutas", { id: r ? r.id : uid("r"), nombre: nom, toleranciaMin: parseInt($("#rT").value, 10) || 0,
+    guardar("rutas", { id: r ? r.id : uid("r"), instalacionId: r ? r.instalacionId : instalacionEfectiva(),
+      nombre: nom, toleranciaMin: parseInt($("#rT").value, 10) || 0,
       ordenEstricto: $("#rO").checked, activo: r ? r.activo !== false : true, puntos });
     dlg.close();
   };
@@ -1801,9 +2268,10 @@ function iniciarRonda(guardiaId, rutaId) {
   if (rondaActiva()) { avisar("Ya hay una ronda en curso. Ciérrala antes de iniciar otra.", "bad"); return; }
   const g = byId(state.guardias, guardiaId), rt = byId(state.rutas, rutaId);
   if (!g || !rt) { avisar("Selecciona un guardia y una ruta válidos.", "bad"); return; }
-  guardar("rondas", { id: uid("rd"), rutaId, guardiaId, rutaNombre: rt.nombre, guardiaNombre: g.nombre,
+  guardar("rondas", { id: uid("rd"), instalacionId: rt.instalacionId || instalacionEfectiva(),
+    rutaId, guardiaId, rutaNombre: rt.nombre, guardiaNombre: g.nombre,
     inicio: new Date().toISOString(), fin: null, estado: "en_curso", totalPuntos: (rt.puntos || []).length,
-    marcas: [], observacion: "" });
+    marcas: [], observacion: "", abiertaPor: state.sesion ? state.sesion.usuario : "" });
   avisar("Ronda iniciada: " + rt.nombre + ".", "hv");
 }
 
@@ -1902,10 +2370,21 @@ $("#btnInstalar").onclick = async () => {
 };
 
 /* ---------------- arranque ---------------- */
-cargarLocal();
-marcarLink();
-render();
-conectar();
+async function arrancar() {
+  cargarLocal();
+  marcarLink();
+  state.resuelto = false;
+  render();
+  await conectar();
+  await migrar();
+  if (!state.instalacionId) {
+    const primera = state.instalaciones.filter(i => i.activa !== false)[0];
+    if (primera) state.instalacionId = primera.id;
+  }
+  recuperarSesion();
+  render();
+}
+arrancar();
 </script>
 
 </body>

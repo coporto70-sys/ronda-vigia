@@ -6,6 +6,30 @@ de control, bitácora y reportes de cumplimiento.
 Aplicación web de un solo archivo, sin dependencias ni servidor. Se instala en
 el teléfono desde el navegador y funciona sin señal.
 
+## Cuentas y roles
+
+Cada persona entra con su usuario y su clave, y ve sólo su pantalla:
+
+| Rol | Qué ve |
+|---|---|
+| **Administrador** | Todo: instalaciones, usuarios, puntos, rutas, personal, rondas y reportes de cualquier instalación. |
+| **Guardia** | El terminal de marcación y sus propias rondas. No entra a configuración ni ve las rondas de otros. |
+| **Cliente** | Bitácora y reportes de su instalación, sin poder modificar nada ni ver otras instalaciones. |
+
+La primera vez que se abre en un equipo, la app pide crear la cuenta de
+administrador. Desde ahí se dan de alta las demás.
+
+> **Esto no es seguridad.** Todo corre en el navegador: las claves se guardan en
+> el propio equipo y las valida el mismo código de la página. Sirve para separar
+> vistas y evitar cambios por descuido, no para resistir a alguien que quiera
+> saltárselo a propósito. Para eso hace falta un servidor que valide del otro lado.
+
+## Instalaciones
+
+Cada instalación es un sitio con su cliente, sus puntos de control, sus rutas y
+su personal. El administrador cambia de una a otra con el selector de la barra
+superior; el cliente sólo accede a la suya.
+
 ## Qué hace
 
 - **Ronda** — el guardia inicia el recorrido y marca cada punto **escaneando su
