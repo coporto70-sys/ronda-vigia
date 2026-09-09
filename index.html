@@ -258,6 +258,48 @@ dialog::backdrop{background:rgba(10,16,22,.55)}
   font-weight:600;background:var(--navy);color:var(--on-navy);font-variant-numeric:tabular-nums}
 .pick .x{flex:none;padding:5px 10px;font-size:16px;line-height:1;color:var(--bad);border-color:var(--bad-line)}
 .pick .x:hover{background:var(--bad-bg)}
+
+/* ---------- cámara y lector QR ---------- */
+.scan .btn-qr{flex:0 0 auto;padding:11px 16px}
+.lector{position:relative;background:#000;border-radius:var(--r-sm);overflow:hidden;aspect-ratio:1/1;max-height:58vh}
+.lector video{width:100%;height:100%;object-fit:cover;display:block}
+.mira{position:absolute;inset:14%;border:3px solid var(--hv);border-radius:12px;box-shadow:0 0 0 100vmax rgba(0,0,0,.42)}
+.mira::before,.mira::after{content:"";position:absolute;left:-3px;right:-3px;height:3px;background:var(--hv);opacity:.55}
+.mira::before{top:50%}
+.lector-msg{position:absolute;left:0;right:0;bottom:0;padding:9px 12px;background:rgba(10,16,22,.78);color:#E9EEF4;
+  font-size:13px;text-align:center}
+
+/* ---------- fotos ---------- */
+.fotos{display:flex;gap:8px;flex-wrap:wrap}
+.foto-mini{position:relative;width:64px;height:64px;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--line-strong);
+  background:var(--surface-2);flex:none;padding:0;cursor:pointer}
+.foto-mini img{width:100%;height:100%;object-fit:cover;display:block}
+.foto-mini .quita{position:absolute;top:2px;right:2px;width:19px;height:19px;border:0;border-radius:50%;
+  background:rgba(10,16,22,.75);color:#fff;font-size:13px;line-height:1;cursor:pointer;padding:0}
+.pt-fotos{grid-column:2 / -1;margin-top:6px}
+.visor{position:fixed;inset:0;z-index:70;background:rgba(8,12,17,.93);display:grid;grid-template-rows:auto 1fr auto;gap:12px;padding:14px}
+.visor img{max-width:100%;max-height:100%;margin:auto;display:block;border-radius:var(--r-sm)}
+.visor-hd,.visor-ft{display:flex;gap:9px;align-items:center;flex-wrap:wrap;color:#E9EEF4;font-size:13.5px}
+.visor-ft{justify-content:center}
+.geo{font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.geo a{color:var(--focus)}
+
+/* ---------- etiquetas QR para imprimir ---------- */
+.hoja{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.etq{border:1.5px dashed var(--line-strong);border-radius:var(--r-sm);padding:12px;text-align:center;background:#fff;color:#141B23}
+.etq svg{width:100%;height:auto;max-width:150px;margin:0 auto 8px;display:block}
+.etq .cod{font-family:"IBM Plex Mono",monospace;font-size:17px;font-weight:600;letter-spacing:.08em}
+.etq .nom{font-size:13.5px;font-weight:600;margin-top:3px;line-height:1.25}
+.etq .zon{font-size:11.5px;color:#6B7887;margin-top:2px}
+.etq .marca{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#9AA7B4;margin-top:7px}
+@media print{
+  body{background:#fff}
+  .topbar,.tabs,#toast,.no-print{display:none !important}
+  main{max-width:none;padding:0}
+  .panel{border:0;box-shadow:none}
+  .hoja{grid-template-columns:repeat(3,1fr);gap:10px}
+  .etq{break-inside:avoid;page-break-inside:avoid}
+}
 </style>
 
 <header class="topbar">
@@ -540,7 +582,8 @@ function bitacora() {
       filas.push({ rondaId: r.id, hora: m.hora, ruta: r.rutaNombre || (ruta ? ruta.nombre : "—"),
         guardia: r.guardiaNombre || (g ? g.nombre : "—"), guardiaId: r.guardiaId, rutaId: r.rutaId,
         punto: m.nombre, codigo: m.codigo, zona: m.zona, estado: m.estado, desfase: m.desfase,
-        metodo: m.metodo, novedad: !!m.novedad, nota: m.nota || "", coords: m.coords || null });
+        metodo: m.metodo, novedad: !!m.novedad, nota: m.nota || "",
+        geo: m.geo || null, coords: m.coords || null, fotos: m.fotos || [] });
     });
     if (r.estado === "finalizada") {
       pts.forEach(p => {
@@ -548,7 +591,8 @@ function bitacora() {
           filas.push({ rondaId: r.id, hora: r.fin, ruta: r.rutaNombre || (ruta ? ruta.nombre : "—"),
             guardia: r.guardiaNombre || (g ? g.nombre : "—"), guardiaId: r.guardiaId, rutaId: r.rutaId,
             punto: p.nombre, codigo: p.codigo, zona: p.zona, estado: "omitido", desfase: null,
-            metodo: "—", novedad: false, nota: "Punto no marcado durante la ronda.", coords: null });
+            metodo: "—", novedad: false, nota: "Punto no marcado durante la ronda.",
+            geo: null, coords: null, fotos: [] });
         }
       });
     }
@@ -566,6 +610,190 @@ function bitacoraFiltrada() {
     (!f.soloNovedades || x.novedad || x.estado === "omitido"));
 }
 
+/* ================= FOTOS =================
+   Las fotos no caben en localStorage (unos 5 MB en total), así que van a
+   IndexedDB, que admite bastante más. En la marca sólo se guarda el id. */
+const FOTO_DB = "ronda_vigia_fotos";
+let _fdb = null;
+
+function fotosDB() {
+  if (_fdb) return _fdb;
+  _fdb = new Promise((ok, falla) => {
+    let req;
+    try { req = indexedDB.open(FOTO_DB, 1); }
+    catch (e) { falla(e); return; }
+    req.onupgradeneeded = () => {
+      const d = req.result;
+      if (!d.objectStoreNames.contains("fotos")) d.createObjectStore("fotos", { keyPath: "id" });
+    };
+    req.onsuccess = () => ok(req.result);
+    req.onerror = () => falla(req.error);
+  });
+  return _fdb;
+}
+
+async function fotoGuardar(id, blob, meta) {
+  const d = await fotosDB();
+  return new Promise((ok, falla) => {
+    const tx = d.transaction("fotos", "readwrite");
+    tx.objectStore("fotos").put(Object.assign({ id, blob }, meta || {}));
+    tx.oncomplete = () => ok(id);
+    tx.onerror = () => falla(tx.error);
+  });
+}
+
+async function fotoLeer(id) {
+  try {
+    const d = await fotosDB();
+    return await new Promise((ok, falla) => {
+      const r = d.transaction("fotos", "readonly").objectStore("fotos").get(id);
+      r.onsuccess = () => ok(r.result || null);
+      r.onerror = () => falla(r.error);
+    });
+  } catch (e) { return null; }
+}
+
+async function fotoBorrar(id) {
+  try {
+    const d = await fotosDB();
+    await new Promise(ok => {
+      const tx = d.transaction("fotos", "readwrite");
+      tx.objectStore("fotos").delete(id);
+      tx.oncomplete = ok; tx.onerror = ok;
+    });
+  } catch (e) { /* nada que borrar */ }
+}
+
+async function fotoTodas() {
+  try {
+    const d = await fotosDB();
+    return await new Promise((ok, falla) => {
+      const r = d.transaction("fotos", "readonly").objectStore("fotos").getAll();
+      r.onsuccess = () => ok(r.result || []);
+      r.onerror = () => falla(r.error);
+    });
+  } catch (e) { return []; }
+}
+
+/* Reduce la foto antes de guardarla: una ronda completa con fotos de 4 MB
+   llenaría el teléfono en pocos turnos. */
+const FOTO_LADO = 1024, FOTO_CALIDAD = 0.6;
+
+function comprimirFoto(file) {
+  return new Promise((ok, falla) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const esc = Math.min(1, FOTO_LADO / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * esc));
+      const h = Math.max(1, Math.round(img.height * esc));
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? ok(b) : falla(new Error("sin blob")), "image/jpeg", FOTO_CALIDAD);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); falla(new Error("imagen ilegible")); };
+    img.src = url;
+  });
+}
+
+const urlsVivas = new Set();
+function urlDeBlob(blob) {
+  const u = URL.createObjectURL(blob);
+  urlsVivas.add(u);
+  return u;
+}
+function soltarUrls() {
+  urlsVivas.forEach(u => { try { URL.revokeObjectURL(u); } catch (e) {} });
+  urlsVivas.clear();
+}
+
+function blobABase64(blob) {
+  return new Promise(ok => {
+    const r = new FileReader();
+    r.onloadend = () => ok(String(r.result).split(",")[1] || "");
+    r.onerror = () => ok("");
+    r.readAsDataURL(blob);
+  });
+}
+function base64ABlob(b64, tipo) {
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: tipo || "image/jpeg" });
+}
+
+/* ================= UBICACIÓN ================= */
+function ubicar() {
+  return new Promise((ok, falla) => {
+    if (!navigator.geolocation) { falla(new Error("El dispositivo no entrega ubicación.")); return; }
+    navigator.geolocation.getCurrentPosition(
+      p => ok({ lat: +p.coords.latitude.toFixed(6), lon: +p.coords.longitude.toFixed(6),
+                precision: Math.round(p.coords.accuracy || 0), hora: new Date().toISOString() }),
+      e => falla(new Error(e.code === 1 ? "Permiso de ubicación denegado." : "No se pudo obtener la ubicación.")),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 });
+  });
+}
+const geoTxt = g => g ? g.lat.toFixed(5) + ", " + g.lon.toFixed(5) + (g.precision ? " (±" + g.precision + " m)" : "") : "";
+const geoMapa = g => g ? "https://www.google.com/maps?q=" + g.lat + "," + g.lon : "";
+function geoHtml(g) {
+  if (!g) return "";
+  return '<span class="geo">📍 <a href="' + geoMapa(g) + '" target="_blank" rel="noopener">' + esc(geoTxt(g)) + "</a></span>";
+}
+
+/* ================= LECTOR QR ================= */
+/* Las bibliotecas van junto a la app, no en un CDN: así el lector funciona sin
+   conexión y el worker de qr-scanner resuelve su ruta relativa, cosa que desde
+   otro dominio falla por origen cruzado. En la versión de archivo único no
+   existen y sólo queda el lector nativo o escribir el código. */
+const QRGEN_LOCAL = "qrcode.min.js";
+const QRGEN_CDN = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.5.2/qrcode.min.js";
+const QRSCAN_LOCAL = "qr-scanner.umd.min.js";
+
+const guiones = {};
+function cargarScript(src) {
+  if (guiones[src]) return guiones[src];
+  guiones[src] = new Promise((ok, falla) => {
+    const s = document.createElement("script");
+    s.src = src; s.async = true;
+    s.onload = () => ok(true);
+    s.onerror = () => { delete guiones[src]; falla(new Error("No se pudo cargar " + src)); };
+    document.head.appendChild(s);
+  });
+  return guiones[src];
+}
+
+/* Android usa el lector nativo del navegador; iPhone no lo tiene y cae en qr-scanner.
+   Su worker es de otro dominio y no se puede cargar directo, así que se copia a un blob. */
+async function motorQR() {
+  if ("BarcodeDetector" in window) {
+    try {
+      const fmts = await window.BarcodeDetector.getSupportedFormats();
+      if (fmts.includes("qr_code")) {
+        const det = new window.BarcodeDetector({ formats: ["qr_code"] });
+        return { tipo: "nativo", leer: async v => {
+          const r = await det.detect(v);
+          return r && r.length ? r[0].rawValue : null;
+        } };
+      }
+    } catch (e) { /* sigue al respaldo */ }
+  }
+  await cargarScript(QRSCAN_LOCAL);
+  const QS = window.QrScanner;
+  if (!QS) throw new Error("No se pudo cargar el lector de códigos.");
+  const lienzo = document.createElement("canvas");
+  return { tipo: "respaldo", leer: async v => {
+    if (!v.videoWidth) return null;
+    lienzo.width = v.videoWidth; lienzo.height = v.videoHeight;
+    lienzo.getContext("2d").drawImage(v, 0, 0);
+    try {
+      const r = await QS.scanImage(lienzo, { returnDetailedScanResult: true });
+      return r && r.data ? r.data : null;
+    } catch (e) { return null; }
+  } };
+}
+
 /* ---------------- avisos ---------------- */
 let toastT = null;
 function avisar(msg, tipo) {
@@ -581,6 +809,7 @@ let tickT = null;
 function render() {
   const act = document.activeElement;
   const foco = act && act.id ? { id: act.id, ini: act.selectionStart, fin: act.selectionEnd } : null;
+  soltarUrls();   /* las miniaturas del repintado anterior ya no se usan */
 
   renderRonda();
   renderTurno();
@@ -642,9 +871,13 @@ function renderRonda() {
       '<div><div class="pt-nom">' + esc(p.nombre) + '<span class="pt-code">' + esc(p.codigo) + "</span>" +
       (m && m.metodo === "manual" ? '<span class="chip warn">Manual</span>' : "") + "</div>" +
       '<div class="pt-sub"><span>' + esc(p.zona) + "</span><span>Programado: min " + p.minuto + "</span>" +
-      (m && m.coords ? "<span>GPS " + m.coords + "</span>" : "") + "</div></div>" +
+      (m ? geoHtml(m.geo) || (m.coords ? "<span>📍 " + esc(m.coords) + "</span>" : "") : "") + "</div></div>" +
       '<div class="pt-act">' + der + "</div>" +
       (m && m.nota ? '<div class="pt-nota' + (m.novedad ? " novedad" : "") + '">' + esc(m.nota) + "</div>" : "") +
+      (m && (m.fotos || []).length
+        ? '<div class="pt-fotos fotos">' + m.fotos.map(fid =>
+            '<button class="foto-mini" data-foto="' + fid + '" data-pie="' + esc(p.codigo + " " + p.nombre) + '" aria-label="Ver foto"></button>').join("") + "</div>"
+        : "") +
       "</li>";
   });
 
@@ -662,9 +895,10 @@ function renderRonda() {
           (res.novedades ? " &middot; " + res.novedades + " con novedad" : "") + "</div>" +
       "</div>" +
       '<div class="scan">' +
-        '<label class="f" for="codigoIn">Código del punto de control' +
+        '<button class="btn btn-hv btn-lg btn-qr" id="btnQR"' + (bloqueado() ? " disabled" : "") + ">▣ Escanear QR</button>" +
+        '<label class="f" for="codigoIn">o escribe el código' +
           '<input id="codigoIn" placeholder="PC-00" autocomplete="off" spellcheck="false"' + (bloqueado() ? " disabled" : "") + "></label>" +
-        '<button class="btn btn-hv btn-lg" id="btnScan"' + (bloqueado() ? " disabled" : "") + ">Registrar</button>" +
+        '<button class="btn btn-lg" id="btnScan"' + (bloqueado() ? " disabled" : "") + ">Registrar</button>" +
         '<button class="btn" id="btnFin">Cerrar ronda</button>' +
       "</div>" +
       '<ul class="pts">' + lista + "</ul>" +
@@ -672,12 +906,29 @@ function renderRonda() {
 
   const inp = $("#codigoIn");
   $("#btnScan").onclick = () => registrarPorCodigo();
+  $("#btnQR").onclick = () => dlgEscanear();
   inp.addEventListener("keydown", e => { if (e.key === "Enter" || e.keyCode === 13) { e.preventDefault(); registrarPorCodigo(); } });
   $("#btnFin").onclick = () => dlgFinalizar(r);
   $$("[data-marcar]", cont).forEach(b => b.onclick = () => {
     const idx = parseInt(b.dataset.marcar, 10);
     const p = pts.find(x => x.idx === idx);
     dlgMarcar(r, ruta, p, idx === sig ? "codigo" : "manual");
+  });
+  pintarMiniaturas(cont);
+}
+
+/* Las miniaturas viven en IndexedDB, así que se cargan después de pintar. */
+function pintarMiniaturas(raiz) {
+  $$("[data-foto]", raiz).forEach(async b => {
+    if (b.dataset.listo) return;
+    b.dataset.listo = "1";
+    b.onclick = () => verFoto(b.dataset.foto, b.dataset.pie);
+    const f = await fotoLeer(b.dataset.foto);
+    if (!f) { b.textContent = "✕"; b.title = "Foto no disponible en este equipo"; return; }
+    const img = document.createElement("img");
+    img.src = urlDeBlob(f.blob);
+    img.alt = "Foto de " + (b.dataset.pie || "punto");
+    b.appendChild(img);
   });
 }
 
@@ -773,7 +1024,7 @@ function renderBitacora() {
     return;
   }
   cont.innerHTML = '<div class="tw"><table><thead><tr>' +
-    "<th>Fecha</th><th>Hora</th><th>Punto</th><th>Zona</th><th>Ruta</th><th>Guardia</th><th>Estado</th><th class=\"num\">Desfase</th><th>Registro</th><th>Observación</th>" +
+    "<th>Fecha</th><th>Hora</th><th>Punto</th><th>Zona</th><th>Ruta</th><th>Guardia</th><th>Estado</th><th class=\"num\">Desfase</th><th>Registro</th><th>Fotos</th><th>Observación</th>" +
     "</tr></thead><tbody>" +
     filas.slice(0, 400).map(x =>
       "<tr><td class=\"mono\">" + fmtFC(x.hora) + "</td><td class=\"mono\">" + fmtHora(x.hora) + "</td>" +
@@ -782,18 +1033,24 @@ function renderBitacora() {
       "<td>" + chipEstado(x.estado) + (x.novedad ? ' <span class="chip bad">Novedad</span>' : "") + "</td>" +
       '<td class="num mono">' + (x.desfase == null ? "—" : (x.desfase > 0 ? "+" : "") + x.desfase) + "</td>" +
       "<td>" + (x.metodo === "manual" ? '<span class="chip warn">Manual</span>' : x.metodo === "codigo" ? "Código" : "—") + "</td>" +
-      "<td>" + esc(x.nota || "") + "</td></tr>").join("") +
+      '<td><div class="fotos">' + (x.fotos || []).map(fid =>
+          '<button class="foto-mini" style="width:44px;height:44px" data-foto="' + fid + '" data-pie="' + esc(x.codigo + " " + x.punto) + '" aria-label="Ver foto"></button>').join("") + "</div></td>" +
+      "<td>" + esc(x.nota || "") + (x.geo ? "<br>" + geoHtml(x.geo) : "") + "</td></tr>").join("") +
     "</tbody></table></div>" +
     (filas.length > 400 ? '<div class="empty">Mostrando las 400 marcas más recientes de ' + filas.length + ". Acota el período para ver el resto.</div>" : "");
+  pintarMiniaturas(cont);
 }
 
 async function exportarCsv() {
   const filas = bitacoraFiltrada();
-  const cab = ["Fecha", "Hora", "Punto", "Codigo", "Zona", "Ruta", "Guardia", "Estado", "Desfase_min", "Registro", "Novedad", "Observacion"];
+  const cab = ["Fecha", "Hora", "Punto", "Codigo", "Zona", "Ruta", "Guardia", "Estado", "Desfase_min", "Registro",
+               "Novedad", "Fotos", "Latitud", "Longitud", "Precision_m", "Mapa", "Observacion"];
   const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
   const cuerpo = filas.map(x => [fmtFC(x.hora), fmtHora(x.hora), x.punto, x.codigo, x.zona, x.ruta, x.guardia,
     (ESTADOS[x.estado] || {}).txt || x.estado, x.desfase == null ? "" : x.desfase, x.metodo,
-    x.novedad ? "Si" : "No", x.nota].map(q).join(";"));
+    x.novedad ? "Si" : "No", (x.fotos || []).length,
+    x.geo ? x.geo.lat : "", x.geo ? x.geo.lon : "", x.geo ? x.geo.precision : "", x.geo ? geoMapa(x.geo) : "",
+    x.nota].map(q).join(";"));
   const csv = "﻿" + cab.join(";") + "\n" + cuerpo.join("\n");
   const ok = await descargar("bitacora-rondas-" + hoyKey() + ".csv", csv, "text/csv;charset=utf-8");
   if (ok) avisar("Bitácora exportada (" + filas.length + " marcas).");
@@ -978,7 +1235,9 @@ function renderConfig() {
         '<div style="flex:0 0 auto"><button class="btn" id="btnBackup"' + (puedeDescargar() ? "" : " disabled") + ">Descargar respaldo</button></div>" +
         '<div style="flex:0 0 auto"><button class="btn" id="btnRestore">Restaurar respaldo</button>' +
           '<input type="file" id="fileRestore" accept="application/json,.json" hidden></div>' +
-      "</div></div></div>" +
+      "</div>" +
+      '<p class="hint" id="espacio" style="margin:12px 0 0">Calculando espacio usado…</p>' +
+      "</div></div>" +
     '<div class="cfg-grid">' +
       panelPuntos() + panelRutas() + panelGuardias() +
     "</div>";
@@ -988,6 +1247,8 @@ function renderConfig() {
   $("#btnBackup").onclick = respaldar;
   $("#btnRestore").onclick = () => $("#fileRestore").click();
   $("#fileRestore").onchange = e => { const f = e.target.files[0]; if (f) dlgRestaurar(f); e.target.value = ""; };
+  mostrarEspacio();
+  $("#btnEtiquetas").onclick = dlgEtiquetas;
   $("#btnNuevoP").onclick = () => dlgPunto(null);
   $("#btnNuevoR").onclick = () => dlgRuta(null);
   $("#btnNuevoG").onclick = () => dlgGuardia(null);
@@ -996,8 +1257,58 @@ function renderConfig() {
   $$("[data-edit-g]", w).forEach(b => b.onclick = () => dlgGuardia(byId(state.guardias, b.dataset.editG)));
 }
 
+/* Etiquetas QR para imprimir y pegar en cada punto: sin ellas el lector no
+   sirve de nada, porque no hay qué escanear. */
+async function dlgEtiquetas() {
+  const activos = state.puntos.filter(p => p.activo);
+  if (!activos.length) { avisar("No hay puntos de control activos.", "bad"); return; }
+  abrirDlg('<div class="dlg-hd"><h3>Etiquetas QR</h3></div>' +
+    '<div class="dlg-bd"><p style="margin:0">Se generará una etiqueta por cada uno de los ' + activos.length +
+      " puntos activos. Imprímelas, plastifícalas y pégalas en su lugar.</p>" +
+      '<p class="hint" style="margin:0">Cada código contiene sólo el identificador del punto (por ejemplo <b>PC-03</b>), ' +
+      "nada más. Si repones una etiqueta, basta con reimprimir la misma.</p>" +
+      '<p class="hint" id="etqMsg" style="margin:0">Cargando el generador…</p></div>' +
+    '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
+      '<button class="btn btn-navy" id="btnEtq" disabled>Generar e imprimir</button></div>');
+
+  try { await cargarScript(QRGEN_LOCAL); }
+  catch (e1) {
+    try { await cargarScript(QRGEN_CDN); }
+    catch (e2) { $("#etqMsg").textContent = "No se pudo cargar el generador de códigos. Necesitas conexión la primera vez."; return; }
+  }
+  if (!window.qrcode) { $("#etqMsg").textContent = "El generador de códigos no está disponible."; return; }
+  $("#etqMsg").textContent = "Generador listo.";
+  $("#btnEtq").disabled = false;
+
+  $("#btnEtq").onclick = () => {
+    dlg.close();
+    const hoja = activos.map(p => {
+      const q = window.qrcode(0, "M");
+      q.addData(p.codigo.toUpperCase());
+      q.make();
+      return '<div class="etq">' + q.createSvgTag({ cellSize: 4, margin: 1, scalable: true }) +
+        '<div class="cod">' + esc(p.codigo.toUpperCase()) + "</div>" +
+        '<div class="nom">' + esc(p.nombre) + "</div>" +
+        '<div class="zon">' + esc(p.zona) + "</div>" +
+        '<div class="marca">' + esc(state.sitio.nombre || "") + "</div></div>";
+    }).join("");
+
+    const v = $("#v-config");
+    const previo = v.innerHTML;
+    v.innerHTML = '<div class="panel"><div class="panel-hd no-print"><h2>Etiquetas QR</h2><span class="spacer"></span>' +
+      '<button class="btn btn-sm" id="etqImp">Imprimir</button>' +
+      '<button class="btn btn-sm" id="etqVolver">Volver</button></div>' +
+      '<div class="panel-bd"><div class="hoja">' + hoja + "</div></div></div>";
+    $("#etqImp").onclick = () => window.print();
+    $("#etqVolver").onclick = () => { v.innerHTML = previo; render(); };
+    window.scrollTo(0, 0);
+    avisar(activos.length + " etiquetas generadas.", "hv");
+  };
+}
+
 function panelPuntos() {
   return '<div class="panel"><div class="panel-hd"><h2>Puntos de control</h2><span class="spacer"></span>' +
+    '<button class="btn btn-sm" id="btnEtiquetas">Etiquetas QR</button>' +
     '<button class="btn btn-sm" id="btnNuevoP">Agregar</button></div>' +
     (state.puntos.length ? '<ul class="pts">' + state.puntos.map(p =>
       '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
@@ -1033,11 +1344,62 @@ function panelGuardias() {
 
 const vacio = () => !state.puntos.length && !state.guardias.length && !state.rutas.length;
 
+const mb = b => (b / 1048576).toFixed(1) + " MB";
+const pesoTxt = b => b < 1048576 ? Math.max(1, Math.round(b / 1024)) + " KB" : (b / 1048576).toFixed(1) + " MB";
+const plural = (n, sing, plur) => n + " " + (n === 1 ? sing : plur);
+
+async function mostrarEspacio() {
+  const el = $("#espacio");
+  if (!el) return;
+  const fotos = await fotoTodas();
+  const peso = fotos.reduce((s, f) => s + (f.blob ? f.blob.size : 0), 0);
+  let txt = plural(fotos.length, "foto guardada", "fotos guardadas") + (peso ? " (" + pesoTxt(peso) + ")" : "");
+  try {
+    if (navigator.storage && navigator.storage.estimate) {
+      const e = await navigator.storage.estimate();
+      if (e && e.quota) {
+        const pc = Math.round((e.usage / e.quota) * 100);
+        txt += " · " + mb(e.usage) + " de " + mb(e.quota) + " usados en este equipo (" + pc + "%)";
+        if (pc >= 80) txt += ". Conviene descargar un respaldo y liberar espacio.";
+      }
+    }
+  } catch (err) { /* el navegador no informa la cuota */ }
+  el.textContent = txt;
+}
+
 async function respaldar() {
-  const d = { formato: "ronda-vigia-1", exportado: new Date().toISOString(), sitio: state.sitio };
-  COLS.forEach(c => d[c] = state[c]);
-  const ok = await descargar("respaldo-ronda-vigia-" + hoyKey() + ".json", JSON.stringify(d, null, 2), "application/json");
-  if (ok) avisar("Respaldo descargado (" + state.rondas.length + " rondas).");
+  const fotos = await fotoTodas();
+  const pesoFotos = fotos.reduce((s, f) => s + (f.blob ? f.blob.size : 0), 0);
+  abrirDlg('<div class="dlg-hd"><h3>Descargar respaldo</h3></div><div class="dlg-bd">' +
+    '<ul style="margin:0;padding-left:20px;line-height:1.7">' +
+      "<li>" + state.puntos.length + " puntos, " + state.rutas.length + " rutas, " + state.guardias.length + " guardias</li>" +
+      "<li>" + plural(state.rondas.length, "ronda registrada", "rondas registradas") + "</li>" +
+      "<li>" + plural(fotos.length, "foto", "fotos") + (pesoFotos ? " (" + pesoTxt(pesoFotos) + ")" : "") + "</li></ul>" +
+    (fotos.length ? '<label class="f chk" style="flex-direction:row;align-items:center;gap:9px;text-transform:none;letter-spacing:0;font-size:14.5px;color:var(--ink)">' +
+      '<input type="checkbox" id="bkFotos" checked> Incluir las fotos</label>' +
+      '<p class="hint" style="margin:0">Con fotos el archivo pesa alrededor de ' + pesoTxt(pesoFotos * 1.37) +
+      ". Sin ellas queda pequeño y sirve igual para copiar la configuración a otros equipos.</p>" : "") +
+    "</div>" +
+    '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
+      '<button class="btn btn-navy" id="btnBk">Descargar</button></div>');
+
+  $("#btnBk").onclick = async () => {
+    const inc = fotos.length && $("#bkFotos") && $("#bkFotos").checked;
+    $("#btnBk").disabled = true;
+    $("#btnBk").textContent = "Preparando…";
+    const d = { formato: "ronda-vigia-1", exportado: new Date().toISOString(), sitio: state.sitio };
+    COLS.forEach(c => d[c] = state[c]);
+    if (inc) {
+      d.fotos = [];
+      for (const f of fotos) {
+        d.fotos.push({ id: f.id, fecha: f.fecha || null, rondaId: f.rondaId || null,
+                       puntoId: f.puntoId || null, codigo: f.codigo || null, b64: await blobABase64(f.blob) });
+      }
+    }
+    dlg.close();
+    const ok = await descargar("respaldo-ronda-vigia-" + hoyKey() + ".json", JSON.stringify(d), "application/json");
+    if (ok) avisar("Respaldo descargado: " + state.rondas.length + " rondas" + (inc ? " y " + fotos.length + " fotos." : ", sin fotos."));
+  };
 }
 
 function dlgRestaurar(file) {
@@ -1056,7 +1418,8 @@ function dlgRestaurar(file) {
       "<p style=\"margin:0\">El respaldo contiene:</p>" +
       '<ul style="margin:0;padding-left:20px;line-height:1.7">' +
         "<li>" + d.puntos.length + " puntos de control</li><li>" + d.rutas.length + " rutas</li>" +
-        "<li>" + d.guardias.length + " guardias</li><li>" + d.rondas.length + " rondas registradas</li></ul>" +
+        "<li>" + d.guardias.length + " guardias</li><li>" + d.rondas.length + " rondas registradas</li>" +
+        "<li>" + ((d.fotos || []).length ? d.fotos.length + " fotos" : "sin fotos") + "</li></ul>" +
       (d.exportado ? '<p class="hint" style="margin:0">Exportado el ' + fmtFC(d.exportado) + " a las " + fmtHora(d.exportado) + ".</p>" : "") +
       "</div>" +
       '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
@@ -1068,7 +1431,16 @@ function dlgRestaurar(file) {
       for (const col of COLS) {
         for (const doc of d[col]) { if (doc && doc.id) await guardar(col, doc); }
       }
-      avisar("Respaldo restaurado.", "hv");
+      let fotosOk = 0;
+      for (const f of (d.fotos || [])) {
+        if (!f || !f.id || !f.b64) continue;
+        try {
+          await fotoGuardar(f.id, base64ABlob(f.b64, "image/jpeg"),
+            { fecha: f.fecha, rondaId: f.rondaId, puntoId: f.puntoId, codigo: f.codigo });
+          fotosOk++;
+        } catch (e) { /* espacio insuficiente: se restaura el resto igual */ }
+      }
+      avisar("Respaldo restaurado" + (fotosOk ? " con " + fotosOk + " fotos." : "."), "hv");
     };
   };
   lector.readAsText(file);
@@ -1094,6 +1466,107 @@ function abrirDlg(html) {
 /* El evento close es asíncrono: sólo vaciamos si no se abrió otro diálogo entretanto. */
 dlg.addEventListener("close", () => { if (!dlg.open) dlg.innerHTML = ""; });
 
+/* Escanea el QR pegado en el punto de control y lo entrega al mismo flujo
+   que la escritura manual del código. */
+async function dlgEscanear() {
+  const r = rondaActiva();
+  if (!r) return;
+  let stream = null, vivo = true, motor = null;
+
+  const cerrar = () => {
+    vivo = false;
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  };
+
+  abrirDlg('<div class="dlg-hd"><h3>Escanear punto</h3></div>' +
+    '<div class="dlg-bd"><div class="lector"><video id="qrVideo" playsinline muted></video>' +
+      '<div class="mira"></div><div class="lector-msg" id="qrMsg">Pidiendo acceso a la cámara…</div></div>' +
+      '<p class="hint" style="margin:0">Apunta al código pegado en el punto. Se registra solo al reconocerlo.</p></div>' +
+    '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button></div>');
+
+  dlg.addEventListener("close", cerrar, { once: true });
+  const cancelar = dlg.querySelector("[data-cerrar]");
+  if (cancelar) cancelar.onclick = () => { cerrar(); dlg.close(); };
+
+  const msg = $("#qrMsg"), video = $("#qrVideo");
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+    video.srcObject = stream;
+    await video.play();
+  } catch (e) {
+    msg.textContent = e && e.name === "NotAllowedError"
+      ? "Permiso de cámara denegado. Puedes escribir el código a mano."
+      : "No se pudo abrir la cámara. Puedes escribir el código a mano.";
+    return;
+  }
+  try { motor = await motorQR(); }
+  catch (e) { msg.textContent = "El lector no está disponible en este equipo. Escribe el código a mano."; return; }
+
+  msg.textContent = "Buscando código…";
+  const pts = puntosDeRuta(byId(state.rutas, r.rutaId));
+
+  (async function bucle() {
+    while (vivo && dlg.open) {
+      let val = null;
+      try { val = await motor.leer(video); } catch (e) { val = null; }
+      if (val) {
+        const cod = String(val).trim().toUpperCase();
+        const conocido = pts.some(p => p.codigo.toUpperCase() === cod);
+        if (conocido) {
+          cerrar(); dlg.close();
+          const inp = $("#codigoIn");
+          if (inp) { inp.value = cod; registrarPorCodigo(); }
+          return;
+        }
+        msg.textContent = "Código « " + cod + " » no pertenece a esta ruta.";
+      }
+      await new Promise(res => setTimeout(res, 220));
+    }
+  })();
+}
+
+/* ---------- visor de fotos ---------- */
+async function verFoto(id, pie) {
+  const f = await fotoLeer(id);
+  if (!f) { avisar("La foto ya no está en este equipo.", "bad"); return; }
+  /* URL propia, fuera del pool de miniaturas: un repintado no debe romper el visor. */
+  const url = URL.createObjectURL(f.blob);
+  const cap = document.createElement("div");
+  cap.className = "visor";
+  cap.innerHTML = '<div class="visor-hd"><b>' + esc(pie || "") + "</b>" +
+      '<span style="margin-left:auto"></span><button class="btn btn-sm" data-x>Cerrar</button></div>' +
+    '<img src="' + url + '" alt="Foto del punto de control">' +
+    '<div class="visor-ft"><button class="btn btn-sm" data-compartir>Compartir</button>' +
+      '<button class="btn btn-sm" data-bajar>Descargar</button>' +
+      '<span style="color:#9AA7B4">' + Math.round(f.blob.size / 1024) + " KB · " + (f.fecha ? fmtFC(f.fecha) + " " + fmtHora(f.fecha) : "") + "</span></div>";
+  document.body.appendChild(cap);
+  const quitar = () => { cap.remove(); try { URL.revokeObjectURL(url); } catch (e) {} };
+  cap.querySelector("[data-x]").onclick = quitar;
+  cap.addEventListener("click", e => { if (e.target === cap) quitar(); });
+
+  const nombre = "ronda-" + (pie || "foto").replace(/[^\w]+/g, "-").toLowerCase() + ".jpg";
+  cap.querySelector("[data-compartir]").onclick = async () => {
+    const file = new File([f.blob], nombre, { type: "image/jpeg" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: pie || "Novedad de ronda", text: pie || "" }); }
+      catch (e) { /* el usuario canceló */ }
+    } else {
+      avisar("Este equipo no permite compartir archivos. Usa Descargar.", "bad");
+    }
+  };
+  cap.querySelector("[data-bajar]").onclick = async () => {
+    const b64 = await blobABase64(f.blob);
+    const bin = base64ABlob(b64, "image/jpeg");
+    if (window.claude) { avisar("La descarga no está disponible en esta vista.", "bad"); return; }
+    const u = URL.createObjectURL(bin);
+    const a = document.createElement("a");
+    a.href = u; a.download = nombre;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(u); a.remove(); }, 0);
+  };
+}
+
 function dlgMarcar(ronda, ruta, punto, metodo) {
   const manual = metodo === "manual";
   abrirDlg(
@@ -1109,29 +1582,79 @@ function dlgMarcar(ronda, ruta, punto, metodo) {
         '<button type="button" class="nov" data-nov="1" aria-pressed="false">Con novedad</button></div></div>' +
       '<label class="f">Observación' + (manual ? " (obligatoria)" : "") +
         '<textarea id="mNota" placeholder="' + (manual ? "Motivo de la marca manual" : "Opcional: qué se observó en el punto") + '"></textarea></label>' +
+      '<div><div class="eyebrow" style="margin-bottom:6px">Fotos <span id="fotoCnt"></span></div>' +
+        '<div class="fotos" id="fotoLista"></div>' +
+        '<button class="btn btn-sm" id="btnFoto" style="margin-top:8px">Tomar foto</button>' +
+        '<input type="file" id="fotoIn" accept="image/*" capture="environment" multiple hidden></div>' +
       '<div><button class="btn btn-sm" id="btnGps">Adjuntar ubicación</button> <span class="hint" id="gpsTxt">Sin ubicación</span></div>' +
     "</div>" +
     '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
       '<button class="btn btn-hv" id="btnOk">Registrar marca</button></div>');
 
-  let novedad = false, coords = null;
+  let novedad = false, geo = null;
+  const pendientes = [];               /* {id, blob} aún no confirmadas */
+  const MAX_FOTOS = 3;
+
   $$("#segNov button").forEach(b => b.onclick = () => {
     novedad = b.dataset.nov === "1";
     $$("#segNov button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
   });
-  $("#btnGps").onclick = () => {
-    const t = $("#gpsTxt");
-    if (!navigator.geolocation) { t.textContent = "El dispositivo no entrega ubicación."; return; }
-    t.textContent = "Obteniendo ubicación…";
-    navigator.geolocation.getCurrentPosition(
-      p => { coords = p.coords.latitude.toFixed(5) + ", " + p.coords.longitude.toFixed(5); t.textContent = coords; },
-      () => { t.textContent = "No se pudo obtener la ubicación."; },
-      { timeout: 8000 });
+
+  function pintarFotos() {
+    const cont = $("#fotoLista");
+    if (!cont) return;
+    cont.innerHTML = pendientes.map((f, i) =>
+      '<span class="foto-mini"><img src="' + f.url + '" alt="Foto ' + (i + 1) + '">' +
+      '<button type="button" class="quita" data-fx="' + i + '" aria-label="Quitar foto ' + (i + 1) + '">&times;</button></span>').join("");
+    $$("[data-fx]", cont).forEach(b => b.onclick = () => {
+      const i = +b.dataset.fx;
+      try { URL.revokeObjectURL(pendientes[i].url); } catch (e) {}
+      pendientes.splice(i, 1);
+      pintarFotos();
+    });
+    $("#fotoCnt").textContent = pendientes.length ? "(" + pendientes.length + " de " + MAX_FOTOS + ")" : "";
+    const bf = $("#btnFoto");
+    if (bf) bf.disabled = pendientes.length >= MAX_FOTOS;
+  }
+  pintarFotos();
+
+  $("#btnFoto").onclick = () => $("#fotoIn").click();
+  $("#fotoIn").onchange = async e => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    for (const f of files) {
+      if (pendientes.length >= MAX_FOTOS) { avisar("Máximo " + MAX_FOTOS + " fotos por punto.", "bad"); break; }
+      try {
+        const blob = await comprimirFoto(f);
+        pendientes.push({ id: uid("f"), blob, url: URL.createObjectURL(blob) });
+      } catch (err) { avisar("No se pudo procesar la foto.", "bad"); }
+    }
+    pintarFotos();
   };
-  $("#btnOk").onclick = () => {
+
+  $("#btnGps").onclick = async () => {
+    const t = $("#gpsTxt");
+    t.textContent = "Obteniendo ubicación…";
+    try { geo = await ubicar(); t.textContent = geoTxt(geo); }
+    catch (err) { geo = null; t.textContent = err.message; }
+  };
+
+  $("#btnOk").onclick = async () => {
     const nota = $("#mNota").value.trim();
     if (manual && !nota) { avisar("Indica el motivo de la marca manual.", "bad"); $("#mNota").focus(); return; }
-    registrarMarca(ronda, ruta, punto, { metodo, novedad, nota, coords });
+    const btn = $("#btnOk");
+    btn.disabled = true;
+    const ids = [];
+    for (const f of pendientes) {
+      try {
+        await fotoGuardar(f.id, f.blob, { fecha: new Date().toISOString(), rondaId: ronda.id, puntoId: punto.puntoId, codigo: punto.codigo });
+        ids.push(f.id);
+      } catch (err) {
+        avisar("No se pudo guardar una foto: el almacenamiento del equipo está lleno.", "bad");
+      }
+      try { URL.revokeObjectURL(f.url); } catch (e) {}
+    }
+    registrarMarca(ronda, ruta, punto, { metodo, novedad, nota, geo, fotos: ids });
     dlg.close();
   };
 }
@@ -1321,7 +1844,8 @@ function registrarMarca(ronda, ruta, punto, opts) {
   const ev = estadoMarca(actual, punto.minuto, hora, tol);
   const marca = { idx: punto.idx, puntoId: punto.puntoId, codigo: punto.codigo, nombre: punto.nombre, zona: punto.zona,
     minutoEsperado: punto.minuto, hora, estado: ev.estado, desfase: ev.desfase,
-    metodo: opts.metodo, novedad: !!opts.novedad, nota: opts.nota || "", coords: opts.coords || null };
+    metodo: opts.metodo, novedad: !!opts.novedad, nota: opts.nota || "",
+    geo: opts.geo || null, fotos: opts.fotos || [] };
   const nr = Object.assign({}, actual, { marcas: marcasDe(actual).concat([marca]) });
   guardar("rondas", nr);
   const et = (ESTADOS[ev.estado] || {}).txt || ev.estado;
