@@ -20,7 +20,7 @@ img{max-width:100%}
 [hidden]{display:none!important}
 </style>
 </head>
-<body><title>Ronda VigÃ­a</title>
+<body><title>Ronda Vigía</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -263,7 +263,7 @@ dialog::backdrop{background:rgba(10,16,22,.55)}
 .pick .x{flex:none;padding:5px 10px;font-size:16px;line-height:1;color:var(--bad);border-color:var(--bad-line)}
 .pick .x:hover{background:var(--bad-bg)}
 
-/* ---------- cÃ¡mara y lector QR ---------- */
+/* ---------- cámara y lector QR ---------- */
 .scan .btn-qr{flex:0 0 auto;padding:11px 16px}
 .lector{position:relative;background:#000;border-radius:var(--r-sm);overflow:hidden;aspect-ratio:1/1;max-height:58vh}
 .lector video{width:100%;height:100%;object-fit:cover;display:block}
@@ -303,7 +303,7 @@ dialog::backdrop{background:rgba(10,16,22,.55)}
 .acceso-err[hidden]{display:none}
 .acceso-nota{margin:0;font-size:11.5px;line-height:1.5;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
 
-/* ---------- sesiÃ³n en la barra superior ---------- */
+/* ---------- sesión en la barra superior ---------- */
 .sesion{display:flex;align-items:center;gap:9px}
 .sesion .quien{text-align:right;line-height:1.2}
 .sesion .quien b{display:block;font-size:13.5px;color:var(--on-navy)}
@@ -341,12 +341,12 @@ dialog::backdrop{background:rgba(10,16,22,.55)}
         <path d="M15 13.4V17l2.6 1.6" fill="none" stroke="#E3C400" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
       <div>
-        <div class="brand-name">Ronda VigÃ­a</div>
+        <div class="brand-name">Ronda Vigía</div>
         <div class="brand-sub">Control de rondas</div>
       </div>
     </div>
-    <div class="sitio" id="sitio">Cargando instalaciÃ³nâ€¦</div>
-    <div class="clock mono"><span id="reloj">--:--:--</span><small id="fecha">â€”</small></div>
+    <div class="sitio" id="sitio">Cargando instalación…</div>
+    <div class="clock mono"><span id="reloj">--:--:--</span><small id="fecha">—</small></div>
     <div class="sesion" id="sesion"></div>
     <button class="btn btn-hv btn-sm" id="btnInstalar" hidden>Instalar app</button>
     <span class="link-state"><span class="dot" id="linkDot"></span><span id="linkTxt">Conectando</span></span>
@@ -356,9 +356,9 @@ dialog::backdrop{background:rgba(10,16,22,.55)}
 <nav class="tabs" role="tablist" aria-label="Secciones">
   <div class="tabs-in">
     <button class="tab" role="tab" id="tab-ronda" aria-controls="v-ronda" aria-selected="true">Ronda</button>
-    <button class="tab" role="tab" id="tab-bitacora" aria-controls="v-bitacora" aria-selected="false">BitÃ¡cora <span class="badge" id="bdgNov">0</span></button>
+    <button class="tab" role="tab" id="tab-bitacora" aria-controls="v-bitacora" aria-selected="false">Bitácora <span class="badge" id="bdgNov">0</span></button>
     <button class="tab" role="tab" id="tab-reportes" aria-controls="v-reportes" aria-selected="false">Reportes</button>
-    <button class="tab" role="tab" id="tab-config" aria-controls="v-config" aria-selected="false">ConfiguraciÃ³n</button>
+    <button class="tab" role="tab" id="tab-config" aria-controls="v-config" aria-selected="false">Configuración</button>
   </div>
 </nav>
 
@@ -402,8 +402,8 @@ const HORA = new Intl.DateTimeFormat("es-CL", { hour: "2-digit", minute: "2-digi
 const HMS = new Intl.DateTimeFormat("es-CL", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
 const FECHA = new Intl.DateTimeFormat("es-CL", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
 const FCORTA = new Intl.DateTimeFormat("es-CL", { day: "2-digit", month: "2-digit", year: "2-digit" });
-const fmtHora = (iso) => iso ? HORA.format(new Date(iso)) : "â€”";
-const fmtFC = (iso) => iso ? FCORTA.format(new Date(iso)) : "â€”";
+const fmtHora = (iso) => iso ? HORA.format(new Date(iso)) : "—";
+const fmtFC = (iso) => iso ? FCORTA.format(new Date(iso)) : "—";
 const diaKey = (d) => { const x = new Date(d); return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); };
 const hoyKey = () => diaKey(new Date());
 const minutos = (a, b) => Math.round((new Date(b) - new Date(a)) / 60000);
@@ -421,28 +421,28 @@ const chipEstado = (e) => {
   return '<span class="chip ' + m.cls + '">' + m.txt + "</span>";
 };
 
-/* ---------------- datos de ejemplo (sÃ³lo modo local) ---------------- */
+/* ---------------- datos de ejemplo (sólo modo local) ---------------- */
 function datosEjemplo() {
   const INS = "ins_demo";
   const inst = [{ id: INS, nombre: "Planta San Bernardo", cliente: "Alimentos del Maipo S.A.",
                   direccion: "Camino Lo Blanco 1240, San Bernardo", activa: true }];
   const g = [
-    /* Personal de ejemplo. Sin documento de identidad a propÃ³sito: son
+    /* Personal de ejemplo. Sin documento de identidad a propósito: son
        personas ficticias y un RUT inventado puede coincidir con alguien real. */
-    { id: "g_ha", nombre: "HÃ©ctor Aravena (ejemplo)", rut: "", turno: "Noche", activo: true },
-    { id: "g_mp", nombre: "Marisol PeÃ±a (ejemplo)", rut: "", turno: "DÃ­a", activo: true },
+    { id: "g_ha", nombre: "Héctor Aravena (ejemplo)", rut: "", turno: "Noche", activo: true },
+    { id: "g_mp", nombre: "Marisol Peña (ejemplo)", rut: "", turno: "Día", activo: true },
     { id: "g_rc", nombre: "Rodrigo Cifuentes (ejemplo)", rut: "", turno: "Noche", activo: true },
-    { id: "g_jv", nombre: "Javiera NÃºÃ±ez (ejemplo)", rut: "", turno: "Tarde", activo: true }
+    { id: "g_jv", nombre: "Javiera Núñez (ejemplo)", rut: "", turno: "Tarde", activo: true }
   ];
   const p = [
-    { id: "p1", codigo: "PC-01", nombre: "PorterÃ­a principal", zona: "Acceso", activo: true },
+    { id: "p1", codigo: "PC-01", nombre: "Portería principal", zona: "Acceso", activo: true },
     { id: "p2", codigo: "PC-02", nombre: "Estacionamiento visitas", zona: "Exterior", activo: true },
     { id: "p3", codigo: "PC-03", nombre: "Bodega de insumos", zona: "Nave 1", activo: true },
-    { id: "p4", codigo: "PC-04", nombre: "Sala elÃ©ctrica", zona: "Nave 1", activo: true },
+    { id: "p4", codigo: "PC-04", nombre: "Sala eléctrica", zona: "Nave 1", activo: true },
     { id: "p5", codigo: "PC-05", nombre: "Patio de maniobras", zona: "Exterior", activo: true },
-    { id: "p6", codigo: "PC-06", nombre: "Cerco norte", zona: "PerÃ­metro", activo: true },
-    { id: "p7", codigo: "PC-07", nombre: "Cerco poniente", zona: "PerÃ­metro", activo: true },
-    { id: "p8", codigo: "PC-08", nombre: "Sala de mÃ¡quinas", zona: "Nave 2", activo: true }
+    { id: "p6", codigo: "PC-06", nombre: "Cerco norte", zona: "Perímetro", activo: true },
+    { id: "p7", codigo: "PC-07", nombre: "Cerco poniente", zona: "Perímetro", activo: true },
+    { id: "p8", codigo: "PC-08", nombre: "Sala de máquinas", zona: "Nave 2", activo: true }
   ];
   const r = [
     { id: "r_per", nombre: "Perimetral nocturna", toleranciaMin: 5, ordenEstricto: true, activo: true,
@@ -459,18 +459,18 @@ function datosEjemplo() {
            sitio: { nombre: "Planta San Bernardo" } };
 }
 
-/* Los datos creados antes de que existieran las instalaciones no tienen a cuÃ¡l
+/* Los datos creados antes de que existieran las instalaciones no tienen a cuál
    pertenecen. Se crea una con el nombre del sitio y se les asigna. */
 async function migrar() {
   if (state.migrado || !state.resuelto) return;
   const huerfanos = ["puntos", "rutas", "rondas"].some(c => state[c].some(d => !d.instalacionId)) ||
                     state.guardias.some(g => !g.instalaciones);
-  if (!state.instalaciones.length && !huerfanos) return;   /* instalaciÃ³n vacÃ­a y sin datos previos */
+  if (!state.instalaciones.length && !huerfanos) return;   /* instalación vacía y sin datos previos */
   state.migrado = true;
 
   let prim = state.instalaciones[0];
   if (!prim) {
-    prim = { id: uid("ins"), nombre: (state.sitio && state.sitio.nombre) || "InstalaciÃ³n principal",
+    prim = { id: uid("ins"), nombre: (state.sitio && state.sitio.nombre) || "Instalación principal",
              cliente: "", direccion: "", activa: true };
     await guardar("instalaciones", prim);
   }
@@ -488,21 +488,21 @@ async function migrar() {
 const COLS = ["instalaciones", "usuarios", "guardias", "puntos", "rutas", "rondas"];
 const state = {
   instalaciones: [], usuarios: [], guardias: [], puntos: [], rutas: [], rondas: [],
-  sitio: { nombre: "InstalaciÃ³n" },
+  sitio: { nombre: "Instalación" },
   vista: "ronda",
   backend: "local",
   resuelto: false,
   localDirty: false,
   migrado: false,
-  sesion: null,          /* usuario con sesiÃ³n iniciada */
-  instalacionId: "",     /* instalaciÃ³n que se estÃ¡ mirando */
+  sesion: null,          /* usuario con sesión iniciada */
+  instalacionId: "",     /* instalación que se está mirando */
   filtros: { dias: "7", guardia: "", ruta: "", soloNovedades: false },
   repDias: 14
 };
 
 /* ================= CUENTAS Y ROLES =================
    Aviso honesto: esto separa vistas y evita errores, NO es seguridad. Todo
-   corre en el navegador, asÃ­ que un usuario decidido puede saltÃ¡rselo. Para
+   corre en el navegador, así que un usuario decidido puede saltárselo. Para
    claves de verdad hace falta un servidor que valide del otro lado. */
 const ROLES = {
   admin:   { txt: "Administrador", cls: "hv"   },
@@ -550,7 +550,13 @@ function abrirSesion(u) {
   render();
 }
 
-function cerrarSesion() {
+async function cerrarSesion() {
+  if (modoServidor()) {
+    srvDejarDeEscuchar();
+    try { await srvSalir(); } catch (e) {}
+    state.backend = "local";
+    marcarLink();
+  }
   state.sesion = null;
   try { localStorage.removeItem(SESION_K); } catch (e) {}
   render();
@@ -576,7 +582,7 @@ const esAdmin = () => rol() === "admin";
 const esGuardia = () => rol() === "guardia";
 const esCliente = () => rol() === "cliente";
 
-/* QuÃ© instalaciones puede ver quien tiene la sesiÃ³n abierta. */
+/* Qué instalaciones puede ver quien tiene la sesión abierta. */
 function instalacionesDe(u) {
   const act = state.instalaciones.filter(i => i.activa !== false);
   if (!u) return [];
@@ -584,9 +590,9 @@ function instalacionesDe(u) {
   const ids = u.instalaciones || [];
   return act.filter(i => ids.includes(i.id));
 }
-/* Nunca se filtra por state.instalacionId a secas: si apunta a una instalaciÃ³n
-   que la sesiÃ³n no tiene asignada (valor obsoleto, error de cÃ³digo), se cae a la
-   primera permitida. AsÃ­ un cliente no puede terminar viendo otra instalaciÃ³n. */
+/* Nunca se filtra por state.instalacionId a secas: si apunta a una instalación
+   que la sesión no tiene asignada (valor obsoleto, error de código), se cae a la
+   primera permitida. Así un cliente no puede terminar viendo otra instalación. */
 function instalacionEfectiva() {
   const permitidas = instalacionesDe(state.sesion);
   if (!permitidas.length) return " ninguna";
@@ -594,12 +600,12 @@ function instalacionEfectiva() {
 }
 const instalacionActual = () => byId(state.instalaciones, instalacionEfectiva());
 
-/* Filtros por instalaciÃ³n: todas las vistas trabajan sobre la activa. */
+/* Filtros por instalación: todas las vistas trabajan sobre la activa. */
 const puntosVis = () => { const i = instalacionEfectiva(); return state.puntos.filter(p => p.instalacionId === i); };
 const rutasVis = () => { const i = instalacionEfectiva(); return state.rutas.filter(r => r.instalacionId === i); };
 const guardiasVis = () => { const i = instalacionEfectiva(); return state.guardias.filter(g => (g.instalaciones || []).includes(i)); };
 
-/* El guardia ve sÃ³lo sus propias rondas; el admin y el cliente, todas las de la instalaciÃ³n. */
+/* El guardia ve sólo sus propias rondas; el admin y el cliente, todas las de la instalación. */
 const miGuardiaId = () => (state.sesion && state.sesion.rol === "guardia") ? (state.sesion.guardiaId || "") : "";
 const rondasVis = () => {
   const i = instalacionEfectiva();
@@ -632,14 +638,17 @@ function guardarLocal() {
     const d = { sitio: state.sitio };
     COLS.forEach(c => d[c] = state[c]);
     localStorage.setItem(LSK, JSON.stringify(d));
-  } catch (e) { /* modo privado: se mantiene sÃ³lo en memoria */ }
+  } catch (e) { /* modo privado: se mantiene sólo en memoria */ }
 }
 
 async function guardar(col, obj) {
   const copia = JSON.parse(JSON.stringify(obj));
   const i = state[col].findIndex(x => x.id === copia.id);
   if (i >= 0) state[col][i] = copia; else state[col].push(copia);
-  if (DB) {
+  if (modoServidor()) {
+    try { await srvGuardar(col, copia); }
+    catch (e) { avisar(e.message, "bad"); }
+  } else if (DB) {
     const body = Object.assign({}, copia); delete body.id;
     try { await DB.collection(col).doc(copia.id).set(body); }
     catch (e) { avisar(errTxt(e), "bad"); }
@@ -648,9 +657,14 @@ async function guardar(col, obj) {
 }
 
 async function borrar(col, id) {
+  const previo = state[col].slice();
   state[col] = state[col].filter(x => x.id !== id);
-  if (DB) { try { await DB.collection(col).doc(id).delete(); } catch (e) { avisar(errTxt(e), "bad"); } }
-  else { state.localDirty = true; guardarLocal(); }
+  if (modoServidor()) {
+    try { await srvBorrar(col, id); }
+    catch (e) { state[col] = previo; avisar(e.message, "bad"); }
+  } else if (DB) {
+    try { await DB.collection(col).doc(id).delete(); } catch (e) { avisar(errTxt(e), "bad"); }
+  } else { state.localDirty = true; guardarLocal(); }
   render();
 }
 
@@ -663,10 +677,10 @@ async function guardarSitio(nombre) {
 
 function errTxt(e) {
   const c = e && e.code;
-  if (c === "quota_exceeded") return "El registro estÃ¡ lleno. Archiva rondas antiguas para seguir registrando.";
+  if (c === "quota_exceeded") return "El registro está lleno. Archiva rondas antiguas para seguir registrando.";
   if (c === "resource_exhausted") return "Demasiadas operaciones seguidas. Espera unos segundos e intenta de nuevo.";
-  if (c === "invalid_argument") return "El registro rechazÃ³ el dato. Revisa los campos e intenta de nuevo.";
-  if (c === "revoked") return "Se perdiÃ³ el acceso al registro compartido. Recarga la pÃ¡gina.";
+  if (c === "invalid_argument") return "El registro rechazó el dato. Revisa los campos e intenta de nuevo.";
+  if (c === "revoked") return "Se perdió el acceso al registro compartido. Recarga la página.";
   return "No se pudo guardar en el registro compartido. Reintenta en un momento.";
 }
 
@@ -700,8 +714,9 @@ async function conectar() {
 
 function marcarLink() {
   const dot = $("#linkDot"), txt = $("#linkTxt");
-  if (state.backend === "db") { dot.classList.remove("local"); txt.textContent = "Registro compartido"; }
-  else { dot.classList.add("local"); txt.textContent = "SÃ³lo este equipo"; }
+  if (state.backend === "srv") { dot.classList.remove("local"); txt.textContent = "En vivo"; }
+  else if (state.backend === "db") { dot.classList.remove("local"); txt.textContent = "Registro compartido"; }
+  else { dot.classList.add("local"); txt.textContent = "Sólo este equipo"; }
 }
 
 /* ---------------- dominio ---------------- */
@@ -712,7 +727,7 @@ function puntosDeRuta(ruta) {
   return (ruta.puntos || []).map((rp, i) => {
     const p = byId(state.puntos, rp.puntoId);
     return { idx: i, puntoId: rp.puntoId, minuto: rp.minuto,
-             codigo: p ? p.codigo : "??", nombre: p ? p.nombre : "Punto eliminado", zona: p ? p.zona : "â€”" };
+             codigo: p ? p.codigo : "??", nombre: p ? p.nombre : "Punto eliminado", zona: p ? p.zona : "—" };
   });
 }
 
@@ -743,7 +758,7 @@ function resumenRonda(r) {
   return { total, marcadas: ms.length, aTiempo, fuera, novedades, omitidos };
 }
 
-/* filas planas de la bitÃ¡cora, mÃ¡s recientes primero */
+/* filas planas de la bitácora, más recientes primero */
 function bitacora() {
   const filas = [];
   rondasVis().forEach(r => {
@@ -751,8 +766,8 @@ function bitacora() {
     const g = byId(state.guardias, r.guardiaId);
     const pts = puntosDeRuta(ruta);
     marcasDe(r).forEach(m => {
-      filas.push({ rondaId: r.id, hora: m.hora, ruta: r.rutaNombre || (ruta ? ruta.nombre : "â€”"),
-        guardia: r.guardiaNombre || (g ? g.nombre : "â€”"), guardiaId: r.guardiaId, rutaId: r.rutaId,
+      filas.push({ rondaId: r.id, hora: m.hora, ruta: r.rutaNombre || (ruta ? ruta.nombre : "—"),
+        guardia: r.guardiaNombre || (g ? g.nombre : "—"), guardiaId: r.guardiaId, rutaId: r.rutaId,
         punto: m.nombre, codigo: m.codigo, zona: m.zona, estado: m.estado, desfase: m.desfase,
         metodo: m.metodo, novedad: !!m.novedad, nota: m.nota || "",
         geo: m.geo || null, coords: m.coords || null, fotos: m.fotos || [] });
@@ -760,10 +775,10 @@ function bitacora() {
     if (r.estado === "finalizada") {
       pts.forEach(p => {
         if (!marcaEnIdx(r, p.idx)) {
-          filas.push({ rondaId: r.id, hora: r.fin, ruta: r.rutaNombre || (ruta ? ruta.nombre : "â€”"),
-            guardia: r.guardiaNombre || (g ? g.nombre : "â€”"), guardiaId: r.guardiaId, rutaId: r.rutaId,
+          filas.push({ rondaId: r.id, hora: r.fin, ruta: r.rutaNombre || (ruta ? ruta.nombre : "—"),
+            guardia: r.guardiaNombre || (g ? g.nombre : "—"), guardiaId: r.guardiaId, rutaId: r.rutaId,
             punto: p.nombre, codigo: p.codigo, zona: p.zona, estado: "omitido", desfase: null,
-            metodo: "â€”", novedad: false, nota: "Punto no marcado durante la ronda.",
+            metodo: "—", novedad: false, nota: "Punto no marcado durante la ronda.",
             geo: null, coords: null, fotos: [] });
         }
       });
@@ -783,8 +798,8 @@ function bitacoraFiltrada() {
 }
 
 /* ================= FOTOS =================
-   Las fotos no caben en localStorage (unos 5 MB en total), asÃ­ que van a
-   IndexedDB, que admite bastante mÃ¡s. En la marca sÃ³lo se guarda el id. */
+   Las fotos no caben en localStorage (unos 5 MB en total), así que van a
+   IndexedDB, que admite bastante más. En la marca sólo se guarda el id. */
 const FOTO_DB = "ronda_vigia_fotos";
 let _fdb = null;
 
@@ -848,7 +863,7 @@ async function fotoTodas() {
 }
 
 /* Reduce la foto antes de guardarla: una ronda completa con fotos de 4 MB
-   llenarÃ­a el telÃ©fono en pocos turnos. */
+   llenaría el teléfono en pocos turnos. */
 const FOTO_LADO = 1024, FOTO_CALIDAD = 0.6;
 
 function comprimirFoto(file) {
@@ -896,29 +911,29 @@ function base64ABlob(b64, tipo) {
   return new Blob([arr], { type: tipo || "image/jpeg" });
 }
 
-/* ================= UBICACIÃ“N ================= */
+/* ================= UBICACIÓN ================= */
 function ubicar() {
   return new Promise((ok, falla) => {
-    if (!navigator.geolocation) { falla(new Error("El dispositivo no entrega ubicaciÃ³n.")); return; }
+    if (!navigator.geolocation) { falla(new Error("El dispositivo no entrega ubicación.")); return; }
     navigator.geolocation.getCurrentPosition(
       p => ok({ lat: +p.coords.latitude.toFixed(6), lon: +p.coords.longitude.toFixed(6),
                 precision: Math.round(p.coords.accuracy || 0), hora: new Date().toISOString() }),
-      e => falla(new Error(e.code === 1 ? "Permiso de ubicaciÃ³n denegado." : "No se pudo obtener la ubicaciÃ³n.")),
+      e => falla(new Error(e.code === 1 ? "Permiso de ubicación denegado." : "No se pudo obtener la ubicación.")),
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 });
   });
 }
-const geoTxt = g => g ? g.lat.toFixed(5) + ", " + g.lon.toFixed(5) + (g.precision ? " (Â±" + g.precision + " m)" : "") : "";
+const geoTxt = g => g ? g.lat.toFixed(5) + ", " + g.lon.toFixed(5) + (g.precision ? " (±" + g.precision + " m)" : "") : "";
 const geoMapa = g => g ? "https://www.google.com/maps?q=" + g.lat + "," + g.lon : "";
 function geoHtml(g) {
   if (!g) return "";
-  return '<span class="geo">ðŸ“ <a href="' + geoMapa(g) + '" target="_blank" rel="noopener">' + esc(geoTxt(g)) + "</a></span>";
+  return '<span class="geo">📍 <a href="' + geoMapa(g) + '" target="_blank" rel="noopener">' + esc(geoTxt(g)) + "</a></span>";
 }
 
 /* ================= LECTOR QR ================= */
-/* Las bibliotecas van junto a la app, no en un CDN: asÃ­ el lector funciona sin
-   conexiÃ³n y el worker de qr-scanner resuelve su ruta relativa, cosa que desde
-   otro dominio falla por origen cruzado. En la versiÃ³n de archivo Ãºnico no
-   existen y sÃ³lo queda el lector nativo o escribir el cÃ³digo. */
+/* Las bibliotecas van junto a la app, no en un CDN: así el lector funciona sin
+   conexión y el worker de qr-scanner resuelve su ruta relativa, cosa que desde
+   otro dominio falla por origen cruzado. En la versión de archivo único no
+   existen y sólo queda el lector nativo o escribir el código. */
 const QRGEN_LOCAL = "qrcode.min.js";
 const QRGEN_CDN = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.5.2/qrcode.min.js";
 const QRSCAN_LOCAL = "qr-scanner.umd.min.js";
@@ -937,7 +952,7 @@ function cargarScript(src) {
 }
 
 /* Android usa el lector nativo del navegador; iPhone no lo tiene y cae en qr-scanner.
-   Su worker es de otro dominio y no se puede cargar directo, asÃ­ que se copia a un blob. */
+   Su worker es de otro dominio y no se puede cargar directo, así que se copia a un blob. */
 async function motorQR() {
   if ("BarcodeDetector" in window) {
     try {
@@ -953,7 +968,7 @@ async function motorQR() {
   }
   await cargarScript(QRSCAN_LOCAL);
   const QS = window.QrScanner;
-  if (!QS) throw new Error("No se pudo cargar el lector de cÃ³digos.");
+  if (!QS) throw new Error("No se pudo cargar el lector de códigos.");
   const lienzo = document.createElement("canvas");
   return { tipo: "respaldo", leer: async v => {
     if (!v.videoWidth) return null;
@@ -967,11 +982,11 @@ async function motorQR() {
 }
 
 /* ================= SERVIDOR (Supabase) =================
-   La direcciÃ³n y la clave pÃºblica las pega el administrador en la app y
-   quedan en este equipo. La clave "anon" estÃ¡ pensada para vivir en el
+   La dirección y la clave pública las pega el administrador en la app y
+   quedan en este equipo. La clave "anon" está pensada para vivir en el
    navegador: lo que protege los datos son las reglas del servidor, no
    esconder esta clave. */
-const APP_VERSION = "2026-09-09-c";      /* sube esto en cada publicaciÃ³n */
+const APP_VERSION = "2026-09-09-d";      /* sube esto en cada publicación */
 const SRV_LIB_MIN = 200000;              /* la biblioteca correcta pesa ~213 KB; la vieja, ~134 KB */
 const SRV_K = "ronda_vigia_servidor";
 const SRV_LIB = "supabase.js";
@@ -1007,66 +1022,66 @@ async function srvCliente() {
   return SB;
 }
 
-/* Los errores de PostgREST a veces llegan con message vacÃ­o; se arma un
-   detalle con lo que haya para no dejar una fila roja sin explicaciÃ³n. */
+/* Los errores de PostgREST a veces llegan con message vacío; se arma un
+   detalle con lo que haya para no dejar una fila roja sin explicación. */
 function detalleError(e) {
-  if (!e) return "error sin descripciÃ³n";
+  if (!e) return "error sin descripción";
   const partes = [e.code, e.message, e.details, e.hint].filter(x => x && String(x).trim());
-  if (partes.length) return partes.join(" Â· ");
+  if (partes.length) return partes.join(" · ");
   try { return JSON.stringify(e).slice(0, 160); } catch (x) { return String(e); }
 }
 const errorDeClave = e => /Invalid Compact JWS|Invalid API key|JWSError|JWT|apikey/i.test(detalleError(e));
 
-/* Cada comprobaciÃ³n devuelve {nombre, ok, detalle}. ok === null es informativo:
-   ni bien ni mal, sÃ³lo estado. */
+/* Cada comprobación devuelve {nombre, ok, detalle}. ok === null es informativo:
+   ni bien ni mal, sólo estado. */
 async function srvDiagnostico() {
   const out = [];
   const paso = (nombre, ok, detalle) => { out.push({ nombre, ok, detalle: detalle || "" }); return ok; };
 
   const c = srvConfig();
-  if (!c) { paso("ConfiguraciÃ³n", false, "Falta la direcciÃ³n o la clave."); return out; }
-  paso("ConfiguraciÃ³n", true, c.url);
+  if (!c) { paso("Configuración", false, "Falta la dirección o la clave."); return out; }
+  paso("Configuración", true, c.url);
 
   /* Forma de la clave, sin mostrarla: casi todos los fallos son un pegado
-     incompleto o haberse traÃ­do la clave equivocada. */
+     incompleto o haberse traído la clave equivocada. */
   const k = String(c.clave || "");
   const esNueva = k.startsWith("sb_publishable_");
   const esSecreta = k.startsWith("sb_secret_");
   const esVieja = k.startsWith("eyJ");
-  const cortada = /[â€¦]|\.\.\.$/.test(k);
+  const cortada = /[…]|\.\.\.$/.test(k);
 
   if (esSecreta) {
     paso("Forma de la clave", false,
-      "Es la clave SECRETA (sb_secret_). No debe salir del servidor. Usa la de la secciÃ³n Â« Publishable key Â».");
+      "Es la clave SECRETA (sb_secret_). No debe salir del servidor. Usa la de la sección « Publishable key ».");
     return out;
   }
   if (!esNueva && !esVieja) {
     paso("Forma de la clave", false,
-      "Lo pegado no parece una clave de Supabase: " + k.length + " caracteres, empieza por Â« " +
-      k.slice(0, 12) + " Â». Debe empezar por Â« sb_publishable_ Â» (o Â« eyJ Â» si usas las antiguas). " +
-      "Borra el campo entero y pega otra vez con el botÃ³n Â« Copy API key Â».");
+      "Lo pegado no parece una clave de Supabase: " + k.length + " caracteres, empieza por « " +
+      k.slice(0, 12) + " ». Debe empezar por « sb_publishable_ » (o « eyJ » si usas las antiguas). " +
+      "Borra el campo entero y pega otra vez con el botón « Copy API key ».");
     return out;
   }
   if (cortada || (esNueva && k.length < 40)) {
     paso("Forma de la clave", false,
-      k.length + " caracteres â€” se cortÃ³ al copiar. Usa el botÃ³n Â« Copy API key Â», no selecciones el texto a mano.");
+      k.length + " caracteres — se cortó al copiar. Usa el botón « Copy API key », no selecciones el texto a mano.");
     return out;
   }
   paso("Forma de la clave", true,
-    (esNueva ? "sb_publishable_ (formato nuevo)" : "eyJâ€¦ (formato antiguo)") + " Â· " + k.length + " caracteres");
+    (esNueva ? "sb_publishable_ (formato nuevo)" : "eyJ… (formato antiguo)") + " · " + k.length + " caracteres");
 
-  paso("VersiÃ³n de la app", true, APP_VERSION);
+  paso("Versión de la app", true, APP_VERSION);
 
-  /* Â¿EstÃ¡ corriendo la biblioteca nueva o quedÃ³ la vieja en la cachÃ©?
-     La vieja no entiende las claves sb_publishable_ y da errores engaÃ±osos. */
+  /* ¿Está corriendo la biblioteca nueva o quedó la vieja en la caché?
+     La vieja no entiende las claves sb_publishable_ y da errores engañosos. */
   try {
     const resp = await fetch(SRV_LIB + "?v=" + APP_VERSION, { cache: "no-store" });
     const txt = await resp.text();
     const nueva = txt.length >= SRV_LIB_MIN;
     paso("Biblioteca actualizada", nueva,
-      Math.round(txt.length / 1024) + " KB â€” " + (nueva
+      Math.round(txt.length / 1024) + " KB — " + (nueva
         ? "correcta"
-        : "es la versiÃ³n antigua, guardada en la cachÃ©. Pulsa Â« Forzar actualizaciÃ³n Â» aquÃ­ abajo."));
+        : "es la versión antigua, guardada en la caché. Pulsa « Forzar actualización » aquí abajo."));
     if (!nueva) return out;
   } catch (e) {
     paso("Biblioteca actualizada", false, detalleError(e));
@@ -1081,39 +1096,39 @@ async function srvDiagnostico() {
     return out;
   }
 
-  /* Antes que nada: Â¿sirve la clave? Si no, no tiene sentido seguir
+  /* Antes que nada: ¿sirve la clave? Si no, no tiene sentido seguir
      llenando la pantalla de rojos que dicen todos lo mismo. */
   try {
     const { error } = await sb.from("perfiles").select("id").limit(1);
     if (error && errorDeClave(error)) {
-      paso("Clave pÃºblica", false,
-        "El servidor rechaza la clave. Respuesta literal: Â« " + detalleError(error) +
-        " Â». Vuelve a copiarla con el botÃ³n Â« Copy API key Â» en Project Settings â†’ API Keys.");
+      paso("Clave pública", false,
+        "El servidor rechaza la clave. Respuesta literal: « " + detalleError(error) +
+        " ». Vuelve a copiarla con el botón « Copy API key » en Project Settings → API Keys.");
       return out;
     }
     if (error && /does not exist|schema cache/i.test(detalleError(error))) {
-      paso("Clave pÃºblica", true, "aceptada");
+      paso("Clave pública", true, "aceptada");
       paso("Tablas", false, "Faltan las tablas. Ejecuta el guion supabase-esquema.sql en el SQL Editor.");
       return out;
     }
-    paso("Clave pÃºblica", true, "aceptada");
+    paso("Clave pública", true, "aceptada");
   } catch (e) {
-    paso("Clave pÃºblica", false, detalleError(e));
+    paso("Clave pública", false, detalleError(e));
     return out;
   }
 
-  /* SesiÃ³n: sin ella no es un fallo, sÃ³lo todavÃ­a no te has registrado. */
+  /* Sesión: sin ella no es un fallo, sólo todavía no te has registrado. */
   let usuario = null;
   try {
     const { data } = await sb.auth.getSession();
     usuario = data && data.session ? data.session.user : null;
-  } catch (e) { /* sin sesiÃ³n */ }
-  paso("SesiÃ³n en el servidor", usuario ? true : null,
-       usuario ? usuario.email : "todavÃ­a sin sesiÃ³n â€” usa Â« Crear mi cuenta Â» aquÃ­ abajo");
+  } catch (e) { /* sin sesión */ }
+  paso("Sesión en el servidor", usuario ? true : null,
+       usuario ? usuario.email : "todavía sin sesión — usa « Crear mi cuenta » aquí abajo");
   state.srv.sesion = usuario;
 
   /* Tablas: si no existe, PostgREST lo dice. Si existe pero las reglas no
-     dejan ver nada, devuelve vacÃ­o sin error, que tambiÃ©n es correcto. */
+     dejan ver nada, devuelve vacío sin error, que también es correcto. */
   /* select("*") y no select("id"): accesos no tiene columna id, su clave es
      la pareja perfil+instalación. */
   for (const t of ["instalaciones", "puntos", "rutas", "rondas", "perfiles", "accesos"]) {
@@ -1131,12 +1146,12 @@ async function srvDiagnostico() {
     try {
       const { data, error } = await sb.from("perfiles").select("*").eq("id", usuario.id).maybeSingle();
       if (error) paso("Tu perfil", false, error.message);
-      else if (!data) paso("Tu perfil", false, "no se creÃ³ el perfil (revisa el disparador del guion)");
+      else if (!data) paso("Tu perfil", false, "no se creó el perfil (revisa el disparador del guion)");
       else {
         state.srv.perfil = data;
         const esAdm = data.rol === "admin";
         paso("Tu rol", esAdm, data.rol === "pendiente"
-          ? "pendiente â€” ejecuta el apartado 7 del guion para hacerte administrador"
+          ? "pendiente — ejecuta el apartado 7 del guion para hacerte administrador"
           : data.rol);
       }
     } catch (e) { paso("Tu perfil", false, e.message); }
@@ -1145,10 +1160,10 @@ async function srvDiagnostico() {
   /* Almacenamiento de fotos */
   try {
     const { error } = await sb.storage.from("fotos").list("", { limit: 1 });
-    if (error) paso("AlmacÃ©n de fotos", false, detalleError(error));
-    else paso("AlmacÃ©n de fotos", true, "bucket accesible");
+    if (error) paso("Almacén de fotos", false, detalleError(error));
+    else paso("Almacén de fotos", true, "bucket accesible");
   } catch (e) {
-    paso("AlmacÃ©n de fotos", false, detalleError(e));
+    paso("Almacén de fotos", false, detalleError(e));
   }
 
   return out;
@@ -1163,8 +1178,8 @@ async function srvRegistrar(nombre, usuario, clave) {
   });
   if (error) throw new Error(traducirErrorSrv(error.message));
   if (!data.session) {
-    /* Con la confirmaciÃ³n por correo apagada esto no deberÃ­a pasar. */
-    throw new Error("La cuenta se creÃ³ pero el servidor no iniciÃ³ sesiÃ³n. Revisa que Â« Confirm email Â» estÃ© apagado.");
+    /* Con la confirmación por correo apagada esto no debería pasar. */
+    throw new Error("La cuenta se creó pero el servidor no inició sesión. Revisa que « Confirm email » esté apagado.");
   }
   return data.user;
 }
@@ -1184,15 +1199,182 @@ async function srvSalir() {
   state.srv.perfil = null;
 }
 
+/* ================= TRADUCCIÓN SERVIDOR ↔ APP =================
+   En el servidor los campos van en minúsculas con guion bajo; en la app,
+   en camelCase. Aquí está la correspondencia, en un solo sitio. */
+const deInstalacion = r => ({ id: r.id, nombre: r.nombre, cliente: r.cliente || "",
+  direccion: r.direccion || "", activa: r.activa !== false });
+const aInstalacion = o => ({ id: o.id, nombre: o.nombre, cliente: o.cliente || "",
+  direccion: o.direccion || "", activa: o.activa !== false });
+
+const dePunto = r => ({ id: r.id, instalacionId: r.instalacion_id, codigo: r.codigo,
+  nombre: r.nombre, zona: r.zona || "General", activo: r.activo !== false });
+const aPunto = o => ({ id: o.id, instalacion_id: o.instalacionId, codigo: o.codigo,
+  nombre: o.nombre, zona: o.zona || "General", activo: o.activo !== false });
+
+const deRuta = r => ({ id: r.id, instalacionId: r.instalacion_id, nombre: r.nombre,
+  toleranciaMin: r.tolerancia_min, ordenEstricto: !!r.orden_estricto,
+  activo: r.activa !== false, puntos: r.tramos || [] });
+const aRuta = o => ({ id: o.id, instalacion_id: o.instalacionId, nombre: o.nombre,
+  tolerancia_min: o.toleranciaMin || 0, orden_estricto: !!o.ordenEstricto,
+  activa: o.activo !== false, tramos: o.puntos || [] });
+
+const deRonda = r => ({ id: r.id, instalacionId: r.instalacion_id, rutaId: r.ruta_id,
+  guardiaId: r.perfil_id, rutaNombre: r.ruta_nombre || "", guardiaNombre: r.guardia_nombre || "",
+  inicio: r.inicio, fin: r.fin, estado: r.estado, totalPuntos: r.total_puntos || 0,
+  observacion: r.observacion || "", marcas: r.marcas || [] });
+const aRonda = o => ({ id: o.id, instalacion_id: o.instalacionId, ruta_id: o.rutaId || null,
+  perfil_id: o.guardiaId || null, ruta_nombre: o.rutaNombre || "", guardia_nombre: o.guardiaNombre || "",
+  inicio: o.inicio, fin: o.fin || null, estado: o.estado, total_puntos: o.totalPuntos || 0,
+  observacion: o.observacion || "", marcas: o.marcas || [], actualizado: new Date().toISOString() });
+
+/* Un perfil del servidor alimenta a la vez la lista de usuarios y, si es
+   guardia, la ficha de personal que usan las rondas. */
+function dePerfil(r, accesos) {
+  const insts = (accesos || []).filter(a => a.perfil_id === r.id).map(a => a.instalacion_id);
+  return { id: r.id, nombre: r.nombre || r.usuario || "", usuario: r.usuario || "",
+           rol: r.rol, turno: r.turno || "Noche", activo: r.activo !== false,
+           instalaciones: insts, guardiaId: r.rol === "guardia" ? r.id : "" };
+}
+
+const TABLA = { instalaciones: "instalaciones", puntos: "puntos", rutas: "rutas", rondas: "rondas" };
+const HACIA = { instalaciones: aInstalacion, puntos: aPunto, rutas: aRuta, rondas: aRonda };
+const DESDE = { instalaciones: deInstalacion, puntos: dePunto, rutas: deRuta, rondas: deRonda };
+
+/* Carga completa desde el servidor a state. */
+async function srvCargarTodo() {
+  const sb = await srvCliente();
+  if (!sb) return false;
+  const pedir = async (t, sel) => {
+    const { data, error } = await sb.from(t).select(sel || "*");
+    if (error) throw new Error(t + ": " + detalleError(error));
+    return data || [];
+  };
+  const [insts, perfiles, accesos, puntos, rutas, rondas] = await Promise.all([
+    pedir("instalaciones"), pedir("perfiles"), pedir("accesos"),
+    pedir("puntos"), pedir("rutas"), pedir("rondas")
+  ]);
+  state.instalaciones = insts.map(deInstalacion);
+  state.usuarios = perfiles.map(p => dePerfil(p, accesos));
+  state.guardias = state.usuarios.filter(u => u.rol === "guardia")
+    .map(u => ({ id: u.id, nombre: u.nombre, rut: "", turno: u.turno,
+                 activo: u.activo, instalaciones: u.instalaciones }));
+  state.puntos = puntos.map(dePunto);
+  state.rutas = rutas.map(deRuta);
+  state.rondas = rondas.map(deRonda);
+  return true;
+}
+
+/* Suscripción en vivo: lo que marca un guardia aparece en el panel del
+   administrador sin recargar. */
+let canalVivo = null;
+async function srvEscuchar() {
+  const sb = await srvCliente();
+  if (!sb || canalVivo) return;
+  canalVivo = sb.channel("ronda-vigia")
+    .on("postgres_changes", { event: "*", schema: "public" }, async payload => {
+      const t = payload.table;
+      if (t === "rondas") {
+        if (payload.eventType === "DELETE") {
+          state.rondas = state.rondas.filter(r => r.id !== payload.old.id);
+        } else {
+          const r = deRonda(payload.new);
+          const i = state.rondas.findIndex(x => x.id === r.id);
+          if (i >= 0) state.rondas[i] = r; else state.rondas.push(r);
+        }
+        render();
+      } else if (["instalaciones", "puntos", "rutas", "perfiles", "accesos"].includes(t)) {
+        /* Los catálogos cambian poco: se recarga entero y listo. */
+        try { await srvCargarTodo(); render(); } catch (e) { /* se reintenta al próximo cambio */ }
+      }
+    })
+    .subscribe();
+}
+function srvDejarDeEscuchar() {
+  if (canalVivo) { try { canalVivo.unsubscribe(); } catch (e) {} canalVivo = null; }
+}
+
+const modoServidor = () => state.backend === "srv";
+
+async function srvGuardar(col, o) {
+  const sb = await srvCliente();
+  if (!sb) throw new Error("Sin conexión al servidor.");
+  if (col === "usuarios") return srvGuardarUsuario(o);
+  if (col === "guardias") return;              /* en el servidor un guardia es un perfil */
+  const t = TABLA[col];
+  if (!t) return;
+  const { error } = await sb.from(t).upsert(HACIA[col](o));
+  if (error) throw new Error(traducirErrorSrv(detalleError(error)));
+}
+
+async function srvGuardarUsuario(u) {
+  const sb = await srvCliente();
+  const { error } = await sb.from("perfiles").update({
+    nombre: u.nombre, usuario: normUsuario(u.usuario), rol: u.rol,
+    turno: u.turno || "Noche", activo: u.activo !== false
+  }).eq("id", u.id);
+  if (error) throw new Error(traducirErrorSrv(detalleError(error)));
+
+  /* Los accesos se reemplazan enteros: es más simple que calcular diferencias
+     y son pocas filas por usuario. */
+  await sb.from("accesos").delete().eq("perfil_id", u.id);
+  const filas = (u.rol === "admin" ? [] : (u.instalaciones || []))
+    .map(i => ({ perfil_id: u.id, instalacion_id: i }));
+  if (filas.length) {
+    const { error: e2 } = await sb.from("accesos").insert(filas);
+    if (e2) throw new Error(traducirErrorSrv(detalleError(e2)));
+  }
+}
+
+async function srvBorrar(col, id) {
+  const sb = await srvCliente();
+  if (!sb) throw new Error("Sin conexión al servidor.");
+  if (col === "usuarios" || col === "guardias") {
+    throw new Error("Las cuentas no se borran desde aquí: desmárcalas como habilitadas.");
+  }
+  const t = TABLA[col];
+  if (!t) return;
+  const { error } = await sb.from(t).delete().eq("id", id);
+  if (error) throw new Error(traducirErrorSrv(detalleError(error)));
+}
+
+/* Tras entrar al servidor: carga los datos, deja la sesión lista y escucha
+   los cambios en vivo. */
+async function srvIniciarModo(usuario) {
+  const sb = await srvCliente();
+  const { data, error } = await sb.from("perfiles").select("*").eq("id", usuario.id).maybeSingle();
+  if (error) throw new Error(traducirErrorSrv(detalleError(error)));
+  if (!data) throw new Error("Tu cuenta existe pero no tiene perfil en el servidor.");
+  if (data.rol === "pendiente") {
+    throw new Error("Tu cuenta está pendiente de aprobación. Pide al administrador que te asigne rol e instalación.");
+  }
+  if (data.activo === false) throw new Error("Tu cuenta está inhabilitada.");
+
+  state.backend = "srv";
+  state.srv.sesion = usuario;
+  state.srv.perfil = data;
+  await srvCargarTodo();
+
+  const yo = state.usuarios.find(u => u.id === usuario.id) || dePerfil(data, []);
+  state.sesion = yo;
+  const permitidas = instalacionesDe(yo);
+  state.instalacionId = permitidas.length ? permitidas[0].id : "";
+  state.vista = yo.rol === "cliente" ? "reportes" : "ronda";
+  state.resuelto = true;
+  marcarLink();
+  await srvEscuchar();
+  render();
+}
+
 function traducirErrorSrv(m) {
   const s = String(m || "");
   if (/Invalid login credentials/i.test(s)) return "Usuario o clave incorrectos.";
-  if (/already registered|already been registered/i.test(s)) return "Ese usuario ya estÃ¡ registrado.";
-  if (/Password should be at least/i.test(s)) return "La clave es demasiado corta (mÃ­nimo 6 caracteres).";
-  if (/Email address .* is invalid/i.test(s)) return "El usuario sÃ³lo puede llevar letras, nÃºmeros, punto o guion.";
+  if (/already registered|already been registered/i.test(s)) return "Ese usuario ya está registrado.";
+  if (/Password should be at least/i.test(s)) return "La clave es demasiado corta (mínimo 6 caracteres).";
+  if (/Email address .* is invalid/i.test(s)) return "El usuario sólo puede llevar letras, números, punto o guion.";
   if (/Signups not allowed/i.test(s)) return "El servidor tiene el registro desactivado (Allow new users to sign up).";
-  if (/Failed to fetch|NetworkError/i.test(s)) return "No se llega al servidor. Revisa la direcciÃ³n y tu conexiÃ³n.";
-  if (/Invalid API key|JWT/i.test(s)) return "La clave pÃºblica no es vÃ¡lida para este proyecto.";
+  if (/Failed to fetch|NetworkError/i.test(s)) return "No se llega al servidor. Revisa la dirección y tu conexión.";
+  if (/Invalid API key|JWT/i.test(s)) return "La clave pública no es válida para este proyecto.";
   return s;
 }
 
@@ -1206,8 +1388,56 @@ function avisar(msg, tipo) {
   toastT = setTimeout(() => { t.className = ""; }, 3600);
 }
 
+/* Acceso contra el servidor: una sola identidad para todos los equipos. */
+function pintarAccesoServidor() {
+  const cap = $("#acceso");
+  cap.hidden = false;
+  cap.innerHTML =
+    '<div class="acceso-caja">' +
+      '<div class="acceso-marca">' +
+        '<svg width="44" height="50" viewBox="0 0 30 34" aria-hidden="true">' +
+          '<path d="M15 1.5 28 6v11.2C28 25 22.4 30.6 15 32.5 7.6 30.6 2 25 2 17.2V6z" fill="#E3C400"/>' +
+          '<path d="M15 5 24.6 8.3v8.9c0 5.9-4.1 10.2-9.6 11.7-5.5-1.5-9.6-5.8-9.6-11.7V8.3z" fill="#1B2E45"/>' +
+          '<circle cx="15" cy="17" r="5.6" fill="none" stroke="#E3C400" stroke-width="1.8"/>' +
+          '<path d="M15 13.4V17l2.6 1.6" fill="none" stroke="#E3C400" stroke-width="1.8" stroke-linecap="round"/>' +
+        "</svg>" +
+        '<div><div class="brand-name">Ronda Vigía</div><div class="brand-sub">Control de rondas</div></div>' +
+      "</div>" +
+      "<h2>Iniciar sesión</h2>" +
+      '<label class="f">Usuario<input id="sxU" class="mono" autocapitalize="none" spellcheck="false" autocomplete="username"></label>' +
+      '<label class="f">Clave<input id="sxC" type="password" autocomplete="current-password"></label>' +
+      '<button class="btn btn-hv btn-lg" id="sxEntrar">Entrar</button>' +
+      '<p class="acceso-err" id="sxErr" hidden></p>' +
+      '<div style="border-top:1px solid var(--line);padding-top:13px">' +
+        '<p class="hint" style="margin:0 0 9px">¿Primera vez en este equipo y no tienes cuenta?</p>' +
+        '<button class="btn btn-sm" id="sxCrear">Crear una cuenta</button></div>' +
+      '<p class="acceso-nota">Conectado a tu servidor. Las cuentas nuevas quedan pendientes hasta que ' +
+        "el administrador les asigne rol e instalación.</p>" +
+    "</div>";
+
+  const err = m => { const e = $("#sxErr"); e.textContent = m; e.hidden = false; };
+  const entrar = async () => {
+    const u = $("#sxU").value.trim(), c = $("#sxC").value;
+    if (!u || !c) { err("Escribe usuario y clave."); return; }
+    $("#sxEntrar").disabled = true;
+    try {
+      const usuario = await srvEntrar(u, c);
+      await srvIniciarModo(usuario);
+      cap.hidden = true;
+    } catch (e) {
+      err(e.message);
+      $("#sxEntrar").disabled = false;
+    }
+  };
+  $("#sxEntrar").onclick = entrar;
+  $("#sxC").addEventListener("keydown", e => { if (e.key === "Enter" || e.keyCode === 13) entrar(); });
+  $("#sxCrear").onclick = () => dlgCuentaServidor("registrar");
+  $("#sxU").focus();
+}
+
 /* ================= PANTALLA DE ACCESO ================= */
 function pintarAcceso() {
+  if (srvConfig()) return pintarAccesoServidor();
   const cap = $("#acceso");
   const hayUsuarios = state.usuarios.length > 0;
   cap.hidden = false;
@@ -1221,10 +1451,10 @@ function pintarAcceso() {
           '<circle cx="15" cy="17" r="5.6" fill="none" stroke="#E3C400" stroke-width="1.8"/>' +
           '<path d="M15 13.4V17l2.6 1.6" fill="none" stroke="#E3C400" stroke-width="1.8" stroke-linecap="round"/>' +
         "</svg>" +
-        "<div><div class=\"brand-name\">Ronda VigÃ­a</div><div class=\"brand-sub\">Control de rondas</div></div>" +
+        "<div><div class=\"brand-name\">Ronda Vigía</div><div class=\"brand-sub\">Control de rondas</div></div>" +
       "</div>" +
       (hayUsuarios
-        ? "<h2>Iniciar sesiÃ³n</h2>" +
+        ? "<h2>Iniciar sesión</h2>" +
           '<label class="f">Usuario<input id="acUser" autocomplete="username" autocapitalize="none" spellcheck="false"></label>' +
           '<label class="f">Clave<input id="acClave" type="password" autocomplete="current-password"></label>' +
           '<button class="btn btn-hv btn-lg" id="acEntrar">Entrar</button>'
@@ -1237,7 +1467,7 @@ function pintarAcceso() {
           '<button class="btn btn-hv btn-lg" id="acCrear">Crear y entrar</button>') +
       '<p class="acceso-err" id="acErr" hidden></p>' +
       '<p class="acceso-nota">Las claves separan lo que ve cada persona y evitan cambios por descuido. ' +
-        "No protegen frente a alguien que quiera saltÃ¡rselas a propÃ³sito: para eso hace falta un servidor.</p>" +
+        "No protegen frente a alguien que quiera saltárselas a propósito: para eso hace falta un servidor.</p>" +
     "</div>";
 
   const err = m => { const e = $("#acErr"); e.textContent = m; e.hidden = false; };
@@ -1249,7 +1479,7 @@ function pintarAcceso() {
       if (!u || u.activo === false) { err("Usuario o clave incorrectos."); return; }
       if (!(await verificarClave(u, clave))) { err("Usuario o clave incorrectos."); return; }
       if (u.rol !== "admin" && !instalacionesDe(u).length) {
-        err("Tu cuenta no tiene ninguna instalaciÃ³n asignada. Pide al administrador que te asigne una.");
+        err("Tu cuenta no tiene ninguna instalación asignada. Pide al administrador que te asigne una.");
         return;
       }
       cap.hidden = true;
@@ -1283,7 +1513,7 @@ function render() {
   const foco = act && act.id ? { id: act.id, ini: act.selectionStart, fin: act.selectionEnd } : null;
   soltarUrls();   /* las miniaturas del repintado anterior ya no se usan */
 
-  /* Sin sesiÃ³n no se pinta nada del interior. */
+  /* Sin sesión no se pinta nada del interior. */
   if (!state.sesion) { if (state.resuelto) pintarAcceso(); return; }
   $("#acceso").hidden = true;
 
@@ -1312,7 +1542,7 @@ function render() {
 
 function bloqueado() { return !state.resuelto; }
 
-/* QuÃ© pestaÃ±as ve cada rol. El cliente no marca; el guardia no configura. */
+/* Qué pestañas ve cada rol. El cliente no marca; el guardia no configura. */
 const PERMISOS = {
   admin:   ["ronda", "bitacora", "reportes", "config"],
   guardia: ["ronda", "bitacora"],
@@ -1323,16 +1553,16 @@ function pintarSesion() {
   const u = state.sesion;
   const permitidas = instalacionesDe(u);
 
-  /* selector de instalaciÃ³n (o el nombre, si sÃ³lo tiene una) */
+  /* selector de instalación (o el nombre, si sólo tiene una) */
   const cont = $("#sitio");
   if (permitidas.length > 1) {
-    cont.innerHTML = '<select class="selinst" id="selInst" aria-label="InstalaciÃ³n">' +
+    cont.innerHTML = '<select class="selinst" id="selInst" aria-label="Instalación">' +
       permitidas.map(i => '<option value="' + i.id + '"' + (i.id === state.instalacionId ? " selected" : "") + ">" +
         esc(i.nombre) + "</option>").join("") + "</select>";
     $("#selInst").onchange = e => { state.instalacionId = e.target.value; render(); };
   } else {
     const i = instalacionActual();
-    cont.textContent = i ? i.nombre : (permitidas.length ? permitidas[0].nombre : "Sin instalaciÃ³n");
+    cont.textContent = i ? i.nombre : (permitidas.length ? permitidas[0].nombre : "Sin instalación");
   }
 
   const r = ROLES[u.rol] || { txt: u.rol };
@@ -1341,7 +1571,7 @@ function pintarSesion() {
     '<button class="btn btn-sm" id="btnSalir">Salir</button>';
   $("#btnSalir").onclick = cerrarSesion;
 
-  /* pestaÃ±as segÃºn el rol */
+  /* pestañas según el rol */
   const puede = PERMISOS[u.rol] || [];
   $$(".tab").forEach(t => {
     const v = t.id.replace("tab-", "");
@@ -1387,7 +1617,7 @@ function renderRonda() {
       '<div><div class="pt-nom">' + esc(p.nombre) + '<span class="pt-code">' + esc(p.codigo) + "</span>" +
       (m && m.metodo === "manual" ? '<span class="chip warn">Manual</span>' : "") + "</div>" +
       '<div class="pt-sub"><span>' + esc(p.zona) + "</span><span>Programado: min " + p.minuto + "</span>" +
-      (m ? geoHtml(m.geo) || (m.coords ? "<span>ðŸ“ " + esc(m.coords) + "</span>" : "") : "") + "</div></div>" +
+      (m ? geoHtml(m.geo) || (m.coords ? "<span>📍 " + esc(m.coords) + "</span>" : "") : "") + "</div></div>" +
       '<div class="pt-act">' + der + "</div>" +
       (m && m.nota ? '<div class="pt-nota' + (m.novedad ? " novedad" : "") + '">' + esc(m.nota) + "</div>" : "") +
       (m && (m.fotos || []).length
@@ -1411,8 +1641,8 @@ function renderRonda() {
           (res.novedades ? " &middot; " + res.novedades + " con novedad" : "") + "</div>" +
       "</div>" +
       '<div class="scan">' +
-        '<button class="btn btn-hv btn-lg btn-qr" id="btnQR"' + (bloqueado() ? " disabled" : "") + ">â–£ Escanear QR</button>" +
-        '<label class="f" for="codigoIn">o escribe el cÃ³digo' +
+        '<button class="btn btn-hv btn-lg btn-qr" id="btnQR"' + (bloqueado() ? " disabled" : "") + ">▣ Escanear QR</button>" +
+        '<label class="f" for="codigoIn">o escribe el código' +
           '<input id="codigoIn" placeholder="PC-00" autocomplete="off" spellcheck="false"' + (bloqueado() ? " disabled" : "") + "></label>" +
         '<button class="btn btn-lg" id="btnScan"' + (bloqueado() ? " disabled" : "") + ">Registrar</button>" +
         '<button class="btn" id="btnFin">Cerrar ronda</button>' +
@@ -1433,14 +1663,14 @@ function renderRonda() {
   pintarMiniaturas(cont);
 }
 
-/* Las miniaturas viven en IndexedDB, asÃ­ que se cargan despuÃ©s de pintar. */
+/* Las miniaturas viven en IndexedDB, así que se cargan después de pintar. */
 function pintarMiniaturas(raiz) {
   $$("[data-foto]", raiz).forEach(async b => {
     if (b.dataset.listo) return;
     b.dataset.listo = "1";
     b.onclick = () => verFoto(b.dataset.foto, b.dataset.pie);
     const f = await fotoLeer(b.dataset.foto);
-    if (!f) { b.textContent = "âœ•"; b.title = "Foto no disponible en este equipo"; return; }
+    if (!f) { b.textContent = "✕"; b.title = "Foto no disponible en este equipo"; return; }
     const img = document.createElement("img");
     img.src = urlDeBlob(f.blob);
     img.alt = "Foto de " + (b.dataset.pie || "punto");
@@ -1455,16 +1685,16 @@ function panelInicio() {
 
   if (!gs.length || !rs.length) {
     const falta = esGuardia() && !propio
-      ? "Tu cuenta no estÃ¡ vinculada a ninguna ficha de personal. Pide al administrador que la corrija."
+      ? "Tu cuenta no está vinculada a ninguna ficha de personal. Pide al administrador que la corrija."
       : "Registra al menos " + (!gs.length ? "un guardia" : "") + (!gs.length && !rs.length ? " y " : "") +
-        (!rs.length ? "una ruta con puntos" : "") + " en la pestaÃ±a ConfiguraciÃ³n.";
+        (!rs.length ? "una ruta con puntos" : "") + " en la pestaña Configuración.";
     return '<div class="panel"><div class="panel-hd"><h2>Iniciar ronda</h2></div>' +
-      '<div class="empty"><strong>Falta configuraciÃ³n</strong>' + esc(falta) + "</div></div>";
+      '<div class="empty"><strong>Falta configuración</strong>' + esc(falta) + "</div></div>";
   }
   return '<div class="panel"><div class="panel-hd"><h2>Iniciar ronda</h2></div><div class="panel-bd">' +
     '<p class="hint" style="margin:0 0 16px">' + (esGuardia()
-      ? "Elige el recorrido. El cronÃ³metro parte al confirmar y cada punto se compara con su minuto programado."
-      : "Selecciona quiÃ©n sale a ronda y quÃ© recorrido harÃ¡. El cronÃ³metro parte al confirmar y cada punto se compara con su minuto programado.") + "</p>" +
+      ? "Elige el recorrido. El cronómetro parte al confirmar y cada punto se compara con su minuto programado."
+      : "Selecciona quién sale a ronda y qué recorrido hará. El cronómetro parte al confirmar y cada punto se compara con su minuto programado.") + "</p>" +
     '<div class="row">' +
       (esGuardia()
         ? '<label class="f">Guardia<input value="' + esc(propio.nombre) + '" disabled>' +
@@ -1501,7 +1731,7 @@ function renderTurno() {
             ? '<span class="chip hv">En curso</span>'
             : '<span class="chip ' + (s.omitidos ? "bad" : "ok") + '">' + s.marcadas + "/" + s.total + "</span>") + "</div></li>";
       }).join("")
-    : '<div class="empty"><strong>Sin rondas hoy</strong>Las rondas iniciadas hoy aparecerÃ¡n aquÃ­.</div>';
+    : '<div class="empty"><strong>Sin rondas hoy</strong>Las rondas iniciadas hoy aparecerán aquí.</div>';
 
   cont.innerHTML =
     '<div class="panel"><div class="panel-hd"><h2>Turno de hoy</h2></div>' +
@@ -1512,7 +1742,7 @@ function renderTurno() {
         '<div class="kpi' + (omitidos ? " alerta" : "") + '"><div class="v">' + omitidos + '</div><div class="l">Omisiones</div></div>' +
       "</div></div></div>" +
     '<div class="panel"><div class="panel-hd"><h2>Rondas de hoy</h2></div><ul class="pts">' + rondasHtml + "</ul></div>" +
-    '<div class="panel"><div class="panel-hd"><h2>Ãšltimas novedades</h2></div>' +
+    '<div class="panel"><div class="panel-hd"><h2>Últimas novedades</h2></div>' +
       (nov.length ? '<ul class="pts">' + nov.map(x =>
         '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
         '<div><div class="pt-nom">' + esc(x.punto) + "</div>" +
@@ -1523,18 +1753,18 @@ function renderTurno() {
     "</div>";
 }
 
-/* ----- BitÃ¡cora ----- */
+/* ----- Bitácora ----- */
 function renderBitacora() {
   const f = state.filtros;
   $("#filtros").innerHTML =
-    '<label class="f">PerÃ­odo<select id="fDias">' +
-      ["7", "30", "90", "todo"].map(d => '<option value="' + d + '"' + (f.dias === d ? " selected" : "") + ">" + (d === "todo" ? "Todo el registro" : "Ãšltimos " + d + " dÃ­as") + "</option>").join("") + "</select></label>" +
+    '<label class="f">Período<select id="fDias">' +
+      ["7", "30", "90", "todo"].map(d => '<option value="' + d + '"' + (f.dias === d ? " selected" : "") + ">" + (d === "todo" ? "Todo el registro" : "Últimos " + d + " días") + "</option>").join("") + "</select></label>" +
     '<label class="f">Guardia<select id="fG"><option value="">Todos</option>' +
       guardiasVis().map(g => '<option value="' + g.id + '"' + (f.guardia === g.id ? " selected" : "") + ">" + esc(g.nombre) + "</option>").join("") + "</select></label>" +
     '<label class="f">Ruta<select id="fR"><option value="">Todas</option>' +
       rutasVis().map(r => '<option value="' + r.id + '"' + (f.ruta === r.id ? " selected" : "") + ">" + esc(r.nombre) + "</option>").join("") + "</select></label>" +
-    '<label class="f chk"><input type="checkbox" id="fN"' + (f.soloNovedades ? " checked" : "") + "> SÃ³lo novedades y omisiones</label>" +
-    '<div style="margin-left:auto;display:flex;gap:8px"><button class="btn" id="btnCsv"' + (puedeDescargar() ? "" : " disabled title=\"La descarga no estÃ¡ disponible en esta vista\"") + ">Exportar CSV</button></div>";
+    '<label class="f chk"><input type="checkbox" id="fN"' + (f.soloNovedades ? " checked" : "") + "> Sólo novedades y omisiones</label>" +
+    '<div style="margin-left:auto;display:flex;gap:8px"><button class="btn" id="btnCsv"' + (puedeDescargar() ? "" : " disabled title=\"La descarga no está disponible en esta vista\"") + ">Exportar CSV</button></div>";
 
   $("#fDias").onchange = e => { f.dias = e.target.value; render(); };
   $("#fG").onchange = e => { f.guardia = e.target.value; render(); };
@@ -1549,20 +1779,20 @@ function renderBitacora() {
     return;
   }
   cont.innerHTML = '<div class="tw"><table><thead><tr>' +
-    "<th>Fecha</th><th>Hora</th><th>Punto</th><th>Zona</th><th>Ruta</th><th>Guardia</th><th>Estado</th><th class=\"num\">Desfase</th><th>Registro</th><th>Fotos</th><th>ObservaciÃ³n</th>" +
+    "<th>Fecha</th><th>Hora</th><th>Punto</th><th>Zona</th><th>Ruta</th><th>Guardia</th><th>Estado</th><th class=\"num\">Desfase</th><th>Registro</th><th>Fotos</th><th>Observación</th>" +
     "</tr></thead><tbody>" +
     filas.slice(0, 400).map(x =>
       "<tr><td class=\"mono\">" + fmtFC(x.hora) + "</td><td class=\"mono\">" + fmtHora(x.hora) + "</td>" +
       "<td><b>" + esc(x.punto) + '</b><br><span class="pt-code">' + esc(x.codigo) + "</span></td>" +
       "<td>" + esc(x.zona) + "</td><td>" + esc(x.ruta) + "</td><td>" + esc(x.guardia) + "</td>" +
       "<td>" + chipEstado(x.estado) + (x.novedad ? ' <span class="chip bad">Novedad</span>' : "") + "</td>" +
-      '<td class="num mono">' + (x.desfase == null ? "â€”" : (x.desfase > 0 ? "+" : "") + x.desfase) + "</td>" +
-      "<td>" + (x.metodo === "manual" ? '<span class="chip warn">Manual</span>' : x.metodo === "codigo" ? "CÃ³digo" : "â€”") + "</td>" +
+      '<td class="num mono">' + (x.desfase == null ? "—" : (x.desfase > 0 ? "+" : "") + x.desfase) + "</td>" +
+      "<td>" + (x.metodo === "manual" ? '<span class="chip warn">Manual</span>' : x.metodo === "codigo" ? "Código" : "—") + "</td>" +
       '<td><div class="fotos">' + (x.fotos || []).map(fid =>
           '<button class="foto-mini" style="width:44px;height:44px" data-foto="' + fid + '" data-pie="' + esc(x.codigo + " " + x.punto) + '" aria-label="Ver foto"></button>').join("") + "</div></td>" +
       "<td>" + esc(x.nota || "") + (x.geo ? "<br>" + geoHtml(x.geo) : "") + "</td></tr>").join("") +
     "</tbody></table></div>" +
-    (filas.length > 400 ? '<div class="empty">Mostrando las 400 marcas mÃ¡s recientes de ' + filas.length + ". Acota el perÃ­odo para ver el resto.</div>" : "");
+    (filas.length > 400 ? '<div class="empty">Mostrando las 400 marcas más recientes de ' + filas.length + ". Acota el período para ver el resto.</div>" : "");
   pintarMiniaturas(cont);
 }
 
@@ -1576,9 +1806,9 @@ async function exportarCsv() {
     x.novedad ? "Si" : "No", (x.fotos || []).length,
     x.geo ? x.geo.lat : "", x.geo ? x.geo.lon : "", x.geo ? x.geo.precision : "", x.geo ? geoMapa(x.geo) : "",
     x.nota].map(q).join(";"));
-  const csv = "ï»¿" + cab.join(";") + "\n" + cuerpo.join("\n");
+  const csv = "﻿" + cab.join(";") + "\n" + cuerpo.join("\n");
   const ok = await descargar("bitacora-rondas-" + hoyKey() + ".csv", csv, "text/csv;charset=utf-8");
-  if (ok) avisar("BitÃ¡cora exportada (" + filas.length + " marcas).");
+  if (ok) avisar("Bitácora exportada (" + filas.length + " marcas).");
 }
 
 /* Dentro de Claude la descarga pasa por la capacidad "downloads"; alojada en un sitio
@@ -1588,9 +1818,9 @@ const puedeDescargar = () => !!DOWN || !window.claude;
 async function descargar(nombre, texto, tipo) {
   if (DOWN) {
     try { await DOWN.save({ filename: nombre, data: texto }); return true; }
-    catch (e) { avisar("La descarga no se completÃ³.", "bad"); return false; }
+    catch (e) { avisar("La descarga no se completó.", "bad"); return false; }
   }
-  if (window.claude) { avisar("La descarga no estÃ¡ disponible en esta vista.", "bad"); return false; }
+  if (window.claude) { avisar("La descarga no está disponible en esta vista.", "bad"); return false; }
   try {
     const blob = new Blob([texto], { type: tipo });
     const url = URL.createObjectURL(blob);
@@ -1599,7 +1829,7 @@ async function descargar(nombre, texto, tipo) {
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
     return true;
-  } catch (e) { avisar("El navegador bloqueÃ³ la descarga.", "bad"); return false; }
+  } catch (e) { avisar("El navegador bloqueó la descarga.", "bad"); return false; }
 }
 
 /* ----- Reportes ----- */
@@ -1626,15 +1856,15 @@ function renderReportes() {
   /* por guardia */
   const porG = {};
   rondas.forEach(r => {
-    const k = r.guardiaId || "â€”";
-    porG[k] = porG[k] || { nombre: r.guardiaNombre || "â€”", rondas: 0, esperadas: 0, marcadas: 0, aTiempo: 0, novedades: 0 };
+    const k = r.guardiaId || "—";
+    porG[k] = porG[k] || { nombre: r.guardiaNombre || "—", rondas: 0, esperadas: 0, marcadas: 0, aTiempo: 0, novedades: 0 };
     const s = resumenRonda(r);
     porG[k].rondas++; porG[k].esperadas += s.total; porG[k].marcadas += s.marcadas;
     porG[k].aTiempo += s.aTiempo; porG[k].novedades += s.novedades;
   });
   const listaG = Object.values(porG).sort((a, b) => pct(b.marcadas, b.esperadas) - pct(a.marcadas, a.esperadas));
 
-  /* puntos mÃ¡s omitidos */
+  /* puntos más omitidos */
   const omit = {};
   bitacora().filter(x => new Date(x.hora) >= desde && x.estado === "omitido").forEach(x => {
     const k = x.codigo + "|" + x.punto;
@@ -1645,8 +1875,8 @@ function renderReportes() {
 
   $("#repWrap").innerHTML =
     '<div class="panel"><div class="panel-hd"><h2>Cumplimiento</h2>' +
-      '<span class="spacer"></span><label class="f" style="flex-direction:row;align-items:center;gap:8px">PerÃ­odo' +
-      '<select id="repSel" style="width:auto">' + [7, 14, 30, 90].map(d => '<option value="' + d + '"' + (dias === d ? " selected" : "") + ">" + d + " dÃ­as</option>").join("") + "</select></label></div>" +
+      '<span class="spacer"></span><label class="f" style="flex-direction:row;align-items:center;gap:8px">Período' +
+      '<select id="repSel" style="width:auto">' + [7, 14, 30, 90].map(d => '<option value="' + d + '"' + (dias === d ? " selected" : "") + ">" + d + " días</option>").join("") + "</select></label></div>" +
       '<div class="panel-bd"><div class="kpis">' +
         '<div class="kpi"><div class="v">' + cumpl + '%</div><div class="l">Puntos cubiertos</div><div class="d">' + marcadas + " de " + esperadas + " programados</div></div>" +
         '<div class="kpi"><div class="v">' + punt + '%</div><div class="l">Dentro de tolerancia</div><div class="d">' + aTiempo + " marcas a tiempo</div></div>" +
@@ -1654,7 +1884,7 @@ function renderReportes() {
         '<div class="kpi' + (novedades ? " alerta" : "") + '"><div class="v">' + novedades + '</div><div class="l">Novedades</div><div class="d">reportadas por los guardias</div></div>' +
       "</div></div></div>" +
     '<div class="panel"><div class="panel-hd"><h2>Cobertura diaria</h2><span class="spacer"></span>' +
-      '<span class="hint">Porcentaje de puntos programados que fueron marcados cada dÃ­a</span></div>' +
+      '<span class="hint">Porcentaje de puntos programados que fueron marcados cada día</span></div>' +
       '<div class="panel-bd"><div class="chart-wrap" id="chartWrap">' + barras(serie) + '<div class="tip" id="tip"></div></div></div></div>' +
     '<div class="cols">' +
       '<div class="panel"><div class="panel-hd"><h2>Por guardia</h2></div>' +
@@ -1667,11 +1897,11 @@ function renderReportes() {
               '<td class="num mono">' + pct(g.aTiempo, g.marcadas) + "%</td>" +
               '<td class="num mono">' + g.novedades + "</td></tr>";
           }).join("") + "</tbody></table></div>"
-          : '<div class="empty"><strong>Sin datos</strong>No hay rondas registradas en el perÃ­odo.</div>') + "</div>" +
-      '<div class="panel"><div class="panel-hd"><h2>Puntos mÃ¡s omitidos</h2></div>' +
-        (listaO.length ? '<div class="tw"><table><thead><tr><th>Punto</th><th>CÃ³digo</th><th class="num">Omisiones</th></tr></thead><tbody>' +
+          : '<div class="empty"><strong>Sin datos</strong>No hay rondas registradas en el período.</div>') + "</div>" +
+      '<div class="panel"><div class="panel-hd"><h2>Puntos más omitidos</h2></div>' +
+        (listaO.length ? '<div class="tw"><table><thead><tr><th>Punto</th><th>Código</th><th class="num">Omisiones</th></tr></thead><tbody>' +
           listaO.map(o => "<tr><td>" + esc(o.punto) + '</td><td><span class="pt-code">' + esc(o.codigo) + '</span></td><td class="num mono">' + o.n + "</td></tr>").join("") + "</tbody></table></div>"
-          : '<div class="empty"><strong>NingÃºn punto omitido</strong>Todas las rondas cerradas cubrieron su recorrido completo.</div>') + "</div>" +
+          : '<div class="empty"><strong>Ningún punto omitido</strong>Todas las rondas cerradas cubrieron su recorrido completo.</div>') + "</div>" +
     "</div>";
 
   $("#repSel").onchange = e => { state.repDias = parseInt(e.target.value, 10); render(); };
@@ -1739,35 +1969,35 @@ function wireChart(serie) {
   if (svg) svg.addEventListener("mouseleave", () => { tip.style.opacity = "0"; });
 }
 
-/* ----- ConfiguraciÃ³n ----- */
+/* ----- Configuración ----- */
 function renderConfig() {
   const w = $("#cfgWrap");
   w.innerHTML =
-    '<div class="panel"><div class="panel-hd"><h2>InstalaciÃ³n en pantalla</h2><span class="spacer"></span>' +
-      (instalacionActual() ? '<button class="btn btn-sm" id="btnEditInst">Editar esta instalaciÃ³n</button>' : "") + "</div>" +
+    '<div class="panel"><div class="panel-hd"><h2>Instalación en pantalla</h2><span class="spacer"></span>' +
+      (instalacionActual() ? '<button class="btn btn-sm" id="btnEditInst">Editar esta instalación</button>' : "") + "</div>" +
       '<div class="panel-bd">' +
       (instalacionActual()
         ? '<div style="font-size:19px;font-weight:600">' + esc(instalacionActual().nombre) + "</div>" +
           '<div class="hint" style="margin-top:3px">' + esc(instalacionActual().cliente || "Sin cliente asignado") +
           (instalacionActual().direccion ? " &middot; " + esc(instalacionActual().direccion) : "") + "</div>" +
-          '<p class="hint" style="margin:10px 0 0">Los puntos, rutas y personal que edites abajo pertenecen a esta instalaciÃ³n. ' +
-          "Cambia de instalaciÃ³n con el selector de la barra superior.</p>"
-        : '<p class="hint" style="margin:0">No hay ninguna instalaciÃ³n seleccionada. Crea una en el panel de Instalaciones.</p>') +
-      '<p class="hint" style="margin:12px 0 0">Registro: <b>' + (state.backend === "db" ? "compartido â€” todos los supervisores ven las marcas en vivo" : "local â€” los datos quedan sÃ³lo en este navegador") + "</b></p>" +
+          '<p class="hint" style="margin:10px 0 0">Los puntos, rutas y personal que edites abajo pertenecen a esta instalación. ' +
+          "Cambia de instalación con el selector de la barra superior.</p>"
+        : '<p class="hint" style="margin:0">No hay ninguna instalación seleccionada. Crea una en el panel de Instalaciones.</p>') +
+      '<p class="hint" style="margin:12px 0 0">Registro: <b>' + (state.backend === "db" ? "compartido — todos los supervisores ven las marcas en vivo" : "local — los datos quedan sólo en este navegador") + "</b></p>" +
       (vacio() ? '<div style="margin-top:14px;padding:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm)">' +
-        '<b>El registro estÃ¡ vacÃ­o.</b> <span class="hint">Puedes cargar una instalaciÃ³n de ejemplo con 8 puntos, 2 rutas y 4 guardias para probar la marcaciÃ³n, y editarla despuÃ©s.</span><br>' +
+        '<b>El registro está vacío.</b> <span class="hint">Puedes cargar una instalación de ejemplo con 8 puntos, 2 rutas y 4 guardias para probar la marcación, y editarla después.</span><br>' +
         '<button class="btn btn-sm" id="btnSeed" style="margin-top:10px">Cargar datos de ejemplo</button></div>' : "") +
     "</div></div>" +
     '<div class="panel"><div class="panel-hd"><h2>Respaldo</h2></div><div class="panel-bd">' +
       '<p class="hint" style="margin:0 0 13px">' + (state.backend === "db"
-        ? "Los datos viven en el registro compartido. Aun asÃ­ conviene guardar una copia periÃ³dica de la bitÃ¡cora."
-        : "<b>Los datos viven sÃ³lo en este navegador.</b> Si se borran los datos del sitio o se reinstala el equipo, la bitÃ¡cora se pierde. Descarga un respaldo cada cierto tiempo.") + "</p>" +
+        ? "Los datos viven en el registro compartido. Aun así conviene guardar una copia periódica de la bitácora."
+        : "<b>Los datos viven sólo en este navegador.</b> Si se borran los datos del sitio o se reinstala el equipo, la bitácora se pierde. Descarga un respaldo cada cierto tiempo.") + "</p>" +
       '<div class="row" style="gap:10px">' +
         '<div style="flex:0 0 auto"><button class="btn" id="btnBackup"' + (puedeDescargar() ? "" : " disabled") + ">Descargar respaldo</button></div>" +
         '<div style="flex:0 0 auto"><button class="btn" id="btnRestore">Restaurar respaldo</button>' +
           '<input type="file" id="fileRestore" accept="application/json,.json" hidden></div>' +
       "</div>" +
-      '<p class="hint" id="espacio" style="margin:12px 0 0">Calculando espacio usadoâ€¦</p>' +
+      '<p class="hint" id="espacio" style="margin:12px 0 0">Calculando espacio usado…</p>' +
       "</div></div>" +
     panelServidor() +
     '<div class="cfg-grid">' +
@@ -1783,9 +2013,9 @@ function renderConfig() {
   $("#srvProbar").onclick = async () => {
     const url = $("#srvUrl").value.trim();
     const clave = $("#srvKey").value.trim();
-    if (!url || !clave) { avisar("Pega la direcciÃ³n y la clave pÃºblica.", "bad"); return; }
+    if (!url || !clave) { avisar("Pega la dirección y la clave pública.", "bad"); return; }
     if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(url)) {
-      avisar("La direcciÃ³n debe ser como https://xxxx.supabase.co", "bad"); return;
+      avisar("La dirección debe ser como https://xxxx.supabase.co", "bad"); return;
     }
     srvGuardarConfig(url, clave);
     await correrDiagnostico();
@@ -1793,10 +2023,10 @@ function renderConfig() {
   const so = $("#srvOlvidar");
   if (so) so.onclick = () => { srvOlvidar(); render(); avisar("Servidor desconectado de este equipo."); };
 
-  /* Salida de emergencia cuando el telÃ©fono se queda con una copia vieja.
-     No toca los datos: sÃ³lo borra la cachÃ© de archivos y recarga. */
+  /* Salida de emergencia cuando el teléfono se queda con una copia vieja.
+     No toca los datos: sólo borra la caché de archivos y recarga. */
   $("#srvRefrescar").onclick = async () => {
-    avisar("Descargando la app de nuevoâ€¦");
+    avisar("Descargando la app de nuevo…");
     try {
       if ("caches" in window) {
         const ns = await caches.keys();
@@ -1812,7 +2042,7 @@ function renderConfig() {
   const sr = $("#srvRegistrar"); if (sr) sr.onclick = () => dlgCuentaServidor("registrar");
   const se = $("#srvEntrar"); if (se) se.onclick = () => dlgCuentaServidor("entrar");
   const ss = $("#srvSalir");
-  if (ss) ss.onclick = async () => { await srvSalir(); render(); avisar("SesiÃ³n del servidor cerrada."); };
+  if (ss) ss.onclick = async () => { await srvSalir(); render(); avisar("Sesión del servidor cerrada."); };
   $("#btnBackup").onclick = respaldar;
   $("#btnRestore").onclick = () => $("#fileRestore").click();
   $("#fileRestore").onchange = e => { const f = e.target.files[0]; if (f) dlgRestaurar(f); e.target.value = ""; };
@@ -1822,7 +2052,7 @@ function renderConfig() {
   $("#btnNuevoR").onclick = () => dlgRuta(null);
   $("#btnNuevoG").onclick = () => dlgGuardia(null);
   $("#btnNuevaI").onclick = () => dlgInstalacion(null);
-  $("#btnNuevoU").onclick = () => dlgUsuario(null);
+  const bu = $("#btnNuevoU"); if (bu) bu.onclick = () => dlgUsuario(null);
   $$("[data-edit-p]", w).forEach(b => b.onclick = () => dlgPunto(byId(state.puntos, b.dataset.editP)));
   $$("[data-edit-r]", w).forEach(b => b.onclick = () => dlgRuta(byId(state.rutas, b.dataset.editR)));
   $$("[data-edit-g]", w).forEach(b => b.onclick = () => dlgGuardia(byId(state.guardias, b.dataset.editG)));
@@ -1831,25 +2061,25 @@ function renderConfig() {
 }
 
 /* Etiquetas QR para imprimir y pegar en cada punto: sin ellas el lector no
-   sirve de nada, porque no hay quÃ© escanear. */
+   sirve de nada, porque no hay qué escanear. */
 async function dlgEtiquetas() {
   const activos = puntosVis().filter(p => p.activo);
   if (!activos.length) { avisar("No hay puntos de control activos.", "bad"); return; }
   abrirDlg('<div class="dlg-hd"><h3>Etiquetas QR</h3></div>' +
-    '<div class="dlg-bd"><p style="margin:0">Se generarÃ¡ una etiqueta por cada uno de los ' + activos.length +
-      " puntos activos. ImprÃ­melas, plastifÃ­calas y pÃ©galas en su lugar.</p>" +
-      '<p class="hint" style="margin:0">Cada cÃ³digo contiene sÃ³lo el identificador del punto (por ejemplo <b>PC-03</b>), ' +
-      "nada mÃ¡s. Si repones una etiqueta, basta con reimprimir la misma.</p>" +
-      '<p class="hint" id="etqMsg" style="margin:0">Cargando el generadorâ€¦</p></div>' +
+    '<div class="dlg-bd"><p style="margin:0">Se generará una etiqueta por cada uno de los ' + activos.length +
+      " puntos activos. Imprímelas, plastifícalas y pégalas en su lugar.</p>" +
+      '<p class="hint" style="margin:0">Cada código contiene sólo el identificador del punto (por ejemplo <b>PC-03</b>), ' +
+      "nada más. Si repones una etiqueta, basta con reimprimir la misma.</p>" +
+      '<p class="hint" id="etqMsg" style="margin:0">Cargando el generador…</p></div>' +
     '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
       '<button class="btn btn-navy" id="btnEtq" disabled>Generar e imprimir</button></div>');
 
   try { await cargarScript(QRGEN_LOCAL); }
   catch (e1) {
     try { await cargarScript(QRGEN_CDN); }
-    catch (e2) { $("#etqMsg").textContent = "No se pudo cargar el generador de cÃ³digos. Necesitas conexiÃ³n la primera vez."; return; }
+    catch (e2) { $("#etqMsg").textContent = "No se pudo cargar el generador de códigos. Necesitas conexión la primera vez."; return; }
   }
-  if (!window.qrcode) { $("#etqMsg").textContent = "El generador de cÃ³digos no estÃ¡ disponible."; return; }
+  if (!window.qrcode) { $("#etqMsg").textContent = "El generador de códigos no está disponible."; return; }
   $("#etqMsg").textContent = "Generador listo.";
   $("#btnEtq").disabled = false;
 
@@ -1883,30 +2113,30 @@ function panelServidor() {
   const c = srvConfig();
   const s = state.srv;
   const chip = s.sesion
-    ? '<span class="chip ok">SesiÃ³n iniciada</span>'
-    : (c ? '<span class="chip warn">Configurado, sin sesiÃ³n</span>' : '<span class="chip">Sin configurar</span>');
+    ? '<span class="chip ok">Sesión iniciada</span>'
+    : (c ? '<span class="chip warn">Configurado, sin sesión</span>' : '<span class="chip">Sin configurar</span>');
 
-  return '<div class="panel"><div class="panel-hd"><h2>Servidor en lÃ­nea</h2>' + chip + "</div><div class=\"panel-bd\">" +
+  return '<div class="panel"><div class="panel-hd"><h2>Servidor en línea</h2>' + chip + "</div><div class=\"panel-bd\">" +
     '<p class="hint" style="margin:0 0 14px">Conecta la app a tu proyecto de Supabase para que las rondas y las fotos ' +
-      "lleguen a un solo lugar y las veas en vivo. La clave pÃºblica se queda en este equipo; puedes pegarla sin problema, " +
-      "es la que va en el navegador por diseÃ±o.</p>" +
-    '<label class="f">DirecciÃ³n del proyecto<input id="srvUrl" class="mono" spellcheck="false" placeholder="https://xxxx.supabase.co" value="' + esc(c ? c.url : "") + '"></label>' +
-    '<label class="f" style="margin-top:12px">Clave pÃºblica (anon / publishable)<input id="srvKey" class="mono" spellcheck="false" type="password" value="' + esc(c ? c.clave : "") + '"></label>' +
-    '<p class="hint" style="margin:7px 0 0">La encuentras en tu proyecto, en <b>Project Settings â†’ API Keys</b>. ' +
+      "lleguen a un solo lugar y las veas en vivo. La clave pública se queda en este equipo; puedes pegarla sin problema, " +
+      "es la que va en el navegador por diseño.</p>" +
+    '<label class="f">Dirección del proyecto<input id="srvUrl" class="mono" spellcheck="false" placeholder="https://xxxx.supabase.co" value="' + esc(c ? c.url : "") + '"></label>' +
+    '<label class="f" style="margin-top:12px">Clave pública (anon / publishable)<input id="srvKey" class="mono" spellcheck="false" type="password" value="' + esc(c ? c.clave : "") + '"></label>' +
+    '<p class="hint" style="margin:7px 0 0">La encuentras en tu proyecto, en <b>Project Settings → API Keys</b>. ' +
       "Es la que dice <b>anon</b> o <b>publishable</b>, nunca la <b>service_role</b>.</p>" +
     '<div class="row" style="margin-top:14px;gap:9px">' +
       '<div style="flex:0 0 auto"><button class="btn btn-navy" id="srvProbar">Guardar y probar</button></div>' +
       (c ? '<div style="flex:0 0 auto"><button class="btn" id="srvOlvidar">Desconectar</button></div>' : "") +
-      '<div style="flex:0 0 auto"><button class="btn" id="srvRefrescar" title="Borra la copia guardada y descarga la app de nuevo">Forzar actualizaciÃ³n</button></div>' +
+      '<div style="flex:0 0 auto"><button class="btn" id="srvRefrescar" title="Borra la copia guardada y descarga la app de nuevo">Forzar actualización</button></div>' +
     "</div>" +
-    '<p class="hint" style="margin:8px 0 0">VersiÃ³n instalada: <b class="mono">' + APP_VERSION + "</b></p>" +
+    '<p class="hint" style="margin:8px 0 0">Versión instalada: <b class="mono">' + APP_VERSION + "</b></p>" +
     (s.chequeos.length
-      ? '<div style="margin-top:16px"><div class="eyebrow" style="margin-bottom:8px">DiagnÃ³stico</div>' +
+      ? '<div style="margin-top:16px"><div class="eyebrow" style="margin-bottom:8px">Diagnóstico</div>' +
         '<div style="display:flex;flex-direction:column;gap:5px">' + s.chequeos.map(x => {
           const fondo = x.ok === null ? "var(--surface-2)" : (x.ok ? "var(--ok-bg)" : "var(--bad-bg)");
           const borde = x.ok === null ? "var(--line-strong)" : (x.ok ? "var(--ok-line)" : "var(--bad-line)");
           const tinta = x.ok === null ? "var(--muted)" : (x.ok ? "var(--ok)" : "var(--bad)");
-          const icono = x.ok === null ? "â€“" : (x.ok ? "âœ“" : "âœ•");
+          const icono = x.ok === null ? "–" : (x.ok ? "✓" : "✕");
           return '<div class="pick" style="gap:9px;background:' + fondo + ';border-color:' + borde + '">' +
             '<b style="flex:0 0 auto;color:' + tinta + '">' + icono + "</b>" +
             '<span class="nm"><b>' + esc(x.nombre) + "</b>" +
@@ -1918,8 +2148,8 @@ function panelServidor() {
         '<div class="eyebrow" style="margin-bottom:8px">Tu cuenta en el servidor</div>' +
         (s.sesion
           ? '<p class="hint" style="margin:0 0 10px">Conectado como <b class="mono">' + esc(s.sesion.email) + "</b>" +
-            (s.perfil ? " Â· rol <b>" + esc(s.perfil.rol) + "</b>" : "") + "</p>" +
-            '<button class="btn btn-sm" id="srvSalir">Cerrar sesiÃ³n del servidor</button>'
+            (s.perfil ? " · rol <b>" + esc(s.perfil.rol) + "</b>" : "") + "</p>" +
+            '<button class="btn btn-sm" id="srvSalir">Cerrar sesión del servidor</button>'
           : '<div class="row" style="gap:9px">' +
               '<div style="flex:0 0 auto"><button class="btn btn-hv" id="srvRegistrar">Crear mi cuenta</button></div>' +
               '<div style="flex:0 0 auto"><button class="btn" id="srvEntrar">Ya tengo cuenta</button></div></div>') +
@@ -1929,13 +2159,13 @@ function panelServidor() {
 
 async function correrDiagnostico() {
   state.srv.probando = true;
-  avisar("Probando la conexiÃ³nâ€¦");
+  avisar("Probando la conexión…");
   try { state.srv.chequeos = await srvDiagnostico(); }
   catch (e) { state.srv.chequeos = [{ nombre: "Error inesperado", ok: false, detalle: e.message }]; }
   state.srv.probando = false;
   render();
   const malos = state.srv.chequeos.filter(x => x.ok === false).length;
-  avisar(malos ? malos + (malos === 1 ? " comprobaciÃ³n con problemas." : " comprobaciones con problemas.") : "Todo correcto.",
+  avisar(malos ? malos + (malos === 1 ? " comprobación con problemas." : " comprobaciones con problemas.") : "Todo correcto.",
          malos ? "bad" : "hv");
 }
 
@@ -1943,12 +2173,12 @@ function dlgCuentaServidor(modo) {
   const nuevo = modo === "registrar";
   abrirDlg('<div class="dlg-hd"><h3>' + (nuevo ? "Crear mi cuenta en el servidor" : "Entrar al servidor") + "</h3></div>" +
     '<div class="dlg-bd">' +
-      (nuevo ? '<p class="hint" style="margin:0">Se crea con rol <b>pendiente</b>: no verÃ¡ nada hasta que un administrador le asigne rol e instalaciÃ³n. ' +
-        "Si eres tÃº el primero, despuÃ©s ejecuta el apartado 7 del guion SQL para darte el rol de administrador.</p>" : "") +
+      (nuevo ? '<p class="hint" style="margin:0">Se crea con rol <b>pendiente</b>: no verá nada hasta que un administrador le asigne rol e instalación. ' +
+        "Si eres tú el primero, después ejecuta el apartado 7 del guion SQL para darte el rol de administrador.</p>" : "") +
       (nuevo ? '<label class="f">Nombre completo<input id="svN"></label>' : "") +
       '<label class="f">Usuario<input id="svU" class="mono" autocapitalize="none" spellcheck="false" placeholder="haravena"></label>' +
       '<label class="f">Clave<input id="svC" type="password" autocomplete="' + (nuevo ? "new-password" : "current-password") + '"></label>' +
-      (nuevo ? '<p class="hint" style="margin:0">MÃ­nimo 6 caracteres.</p>' : "") +
+      (nuevo ? '<p class="hint" style="margin:0">Mínimo 6 caracteres.</p>' : "") +
     "</div>" +
     '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
       '<button class="btn btn-navy" id="svOk">' + (nuevo ? "Crear cuenta" : "Entrar") + "</button></div>");
@@ -1963,7 +2193,7 @@ function dlgCuentaServidor(modo) {
       if (nuevo) await srvRegistrar(nom, u, cl);
       else await srvEntrar(u, cl);
       dlg.close();
-      avisar(nuevo ? "Cuenta creada en el servidor." : "SesiÃ³n iniciada en el servidor.", "hv");
+      avisar(nuevo ? "Cuenta creada en el servidor." : "Sesión iniciada en el servidor.", "hv");
       await correrDiagnostico();
     } catch (e) {
       avisar(e.message, "bad");
@@ -1986,25 +2216,30 @@ function panelInstalaciones() {
         "<span>" + np + " puntos</span><span>" + nr + " rutas</span></div></div>" +
         '<div class="pt-act"><button class="btn btn-sm" data-edit-i="' + i.id + '">Editar</button></div></li>';
     }).join("") + "</ul>"
-      : '<div class="empty"><strong>Sin instalaciones</strong>Cada instalaciÃ³n es un sitio con sus propios puntos, rutas y cliente.</div>') + "</div>";
+      : '<div class="empty"><strong>Sin instalaciones</strong>Cada instalación es un sitio con sus propios puntos, rutas y cliente.</div>') + "</div>";
 }
 
 function panelUsuarios() {
   return '<div class="panel"><div class="panel-hd"><h2>Usuarios</h2><span class="spacer"></span>' +
-    '<button class="btn btn-sm" id="btnNuevoU">Agregar</button></div>' +
+    (modoServidor() ? "" : '<button class="btn btn-sm" id="btnNuevoU">Agregar</button>') + "</div>" +
+    (modoServidor()
+      ? '<div class="panel-bd" style="padding-bottom:0"><p class="hint" style="margin:0">' +
+        "Cada persona crea su cuenta desde la pantalla de acceso y queda <b>pendiente</b>. " +
+        "Aquí le asignas rol e instalación para que pueda entrar.</p></div>"
+      : "") +
     '<ul class="pts">' + state.usuarios.map(u => {
       const r = ROLES[u.rol] || { txt: u.rol, cls: "" };
       const insts = u.rol === "admin" ? "Todas las instalaciones"
-        : (u.instalaciones || []).map(id => { const i = byId(state.instalaciones, id); return i ? i.nombre : "?"; }).join(", ") || "Sin instalaciÃ³n asignada";
+        : (u.instalaciones || []).map(id => { const i = byId(state.instalaciones, id); return i ? i.nombre : "?"; }).join(", ") || "Sin instalación asignada";
       return '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
         '<div><div class="pt-nom">' + esc(u.nombre) + ' <span class="chip ' + r.cls + '">' + r.txt + "</span>" +
         (u.activo === false ? ' <span class="chip">Inhabilitado</span>' : "") +
-        (state.sesion && u.id === state.sesion.id ? ' <span class="chip ok">TÃº</span>' : "") + "</div>" +
+        (state.sesion && u.id === state.sesion.id ? ' <span class="chip ok">Tú</span>' : "") + "</div>" +
         '<div class="pt-sub"><span class="mono">' + esc(u.usuario) + "</span><span>" + esc(insts) + "</span></div></div>" +
         '<div class="pt-act"><button class="btn btn-sm" data-edit-u="' + u.id + '">Editar</button></div></li>';
     }).join("") + "</ul>" +
     '<div class="panel-bd" style="border-top:1px solid var(--line)"><p class="hint" style="margin:0">' +
-      "Las claves separan lo que ve cada persona y evitan cambios por descuido. No resisten a alguien que quiera saltÃ¡rselas: para eso hace falta un servidor.</p></div></div>";
+      "Las claves separan lo que ve cada persona y evitan cambios por descuido. No resisten a alguien que quiera saltárselas: para eso hace falta un servidor.</p></div></div>";
 }
 
 function panelPuntos() {
@@ -2038,9 +2273,9 @@ function panelGuardias() {
     (guardiasVis().length ? '<ul class="pts">' + guardiasVis().map(g =>
       '<li class="pt" style="grid-template-columns:minmax(0,1fr) auto">' +
       '<div><div class="pt-nom">' + esc(g.nombre) + (g.activo ? "" : ' <span class="chip">Inactivo</span>') + "</div>" +
-      '<div class="pt-sub"><span class="mono">' + esc(g.rut || "â€”") + "</span><span>Turno " + esc(g.turno) + "</span></div></div>" +
+      '<div class="pt-sub"><span class="mono">' + esc(g.rut || "—") + "</span><span>Turno " + esc(g.turno) + "</span></div></div>" +
       '<div class="pt-act"><button class="btn btn-sm" data-edit-g="' + g.id + '">Editar</button></div></li>').join("") + "</ul>"
-      : '<div class="empty"><strong>Sin personal</strong>Registra a los guardias que realizarÃ¡n las rondas.</div>') + "</div>";
+      : '<div class="empty"><strong>Sin personal</strong>Registra a los guardias que realizarán las rondas.</div>') + "</div>";
 }
 
 const vacio = () => !puntosVis().length && !guardiasVis().length && !rutasVis().length;
@@ -2060,7 +2295,7 @@ async function mostrarEspacio() {
       const e = await navigator.storage.estimate();
       if (e && e.quota) {
         const pc = Math.round((e.usage / e.quota) * 100);
-        txt += " Â· " + mb(e.usage) + " de " + mb(e.quota) + " usados en este equipo (" + pc + "%)";
+        txt += " · " + mb(e.usage) + " de " + mb(e.quota) + " usados en este equipo (" + pc + "%)";
         if (pc >= 80) txt += ". Conviene descargar un respaldo y liberar espacio.";
       }
     }
@@ -2079,7 +2314,7 @@ async function respaldar() {
     (fotos.length ? '<label class="f chk" style="flex-direction:row;align-items:center;gap:9px;text-transform:none;letter-spacing:0;font-size:14.5px;color:var(--ink)">' +
       '<input type="checkbox" id="bkFotos" checked> Incluir las fotos</label>' +
       '<p class="hint" style="margin:0">Con fotos el archivo pesa alrededor de ' + pesoTxt(pesoFotos * 1.37) +
-      ". Sin ellas queda pequeÃ±o y sirve igual para copiar la configuraciÃ³n a otros equipos.</p>" : "") +
+      ". Sin ellas queda pequeño y sirve igual para copiar la configuración a otros equipos.</p>" : "") +
     "</div>" +
     '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
       '<button class="btn btn-navy" id="btnBk">Descargar</button></div>');
@@ -2087,7 +2322,7 @@ async function respaldar() {
   $("#btnBk").onclick = async () => {
     const inc = fotos.length && $("#bkFotos") && $("#bkFotos").checked;
     $("#btnBk").disabled = true;
-    $("#btnBk").textContent = "Preparandoâ€¦";
+    $("#btnBk").textContent = "Preparando…";
     const d = { formato: "ronda-vigia-1", exportado: new Date().toISOString(), sitio: state.sitio };
     COLS.forEach(c => d[c] = state[c]);
     if (inc) {
@@ -2110,12 +2345,12 @@ function dlgRestaurar(file) {
     let d = null;
     try { d = JSON.parse(lector.result); } catch (e) { d = null; }
     if (!d || !Array.isArray(d.puntos) || !Array.isArray(d.guardias) || !Array.isArray(d.rutas) || !Array.isArray(d.rondas)) {
-      avisar("Ese archivo no es un respaldo de Ronda VigÃ­a.", "bad");
+      avisar("Ese archivo no es un respaldo de Ronda Vigía.", "bad");
       return;
     }
     abrirDlg('<div class="dlg-hd"><h3>Restaurar respaldo</h3></div><div class="dlg-bd">' +
       '<div style="padding:12px;background:var(--bad-bg);color:var(--bad);border-radius:var(--r-sm)">' +
-        "<b>Esto reemplaza todo lo que hay ahora.</b> La configuraciÃ³n y la bitÃ¡cora actuales se pierden.</div>" +
+        "<b>Esto reemplaza todo lo que hay ahora.</b> La configuración y la bitácora actuales se pierden.</div>" +
       "<p style=\"margin:0\">El respaldo contiene:</p>" +
       '<ul style="margin:0;padding-left:20px;line-height:1.7">' +
         "<li>" + d.puntos.length + " puntos de control</li><li>" + d.rutas.length + " rutas</li>" +
@@ -2127,7 +2362,7 @@ function dlgRestaurar(file) {
         '<button class="btn btn-danger" id="btnRest">Reemplazar todo</button></div>');
     $("#btnRest").onclick = async () => {
       dlg.close();
-      avisar("Restaurandoâ€¦");
+      avisar("Restaurando…");
       if (d.sitio && d.sitio.nombre) await guardarSitio(d.sitio.nombre);
       for (const col of COLS) {
         for (const doc of d[col]) { if (doc && doc.id) await guardar(col, doc); }
@@ -2154,11 +2389,11 @@ async function sembrar() {
   for (const p of ej.puntos) await guardar("puntos", p);
   for (const g of ej.guardias) await guardar("guardias", g);
   for (const r of ej.rutas) await guardar("rutas", r);
-  avisar("InstalaciÃ³n de ejemplo cargada.", "hv");
+  avisar("Instalación de ejemplo cargada.", "hv");
   render();
 }
 
-/* ---------------- diÃ¡logos ---------------- */
+/* ---------------- diálogos ---------------- */
 const dlg = $("#dlg");
 function abrirDlg(html) {
   dlg.innerHTML = html;
@@ -2166,11 +2401,11 @@ function abrirDlg(html) {
   const c = dlg.querySelector("[data-cerrar]");
   if (c) c.onclick = () => dlg.close();
 }
-/* El evento close es asÃ­ncrono: sÃ³lo vaciamos si no se abriÃ³ otro diÃ¡logo entretanto. */
+/* El evento close es asíncrono: sólo vaciamos si no se abrió otro diálogo entretanto. */
 dlg.addEventListener("close", () => { if (!dlg.open) dlg.innerHTML = ""; });
 
 /* Escanea el QR pegado en el punto de control y lo entrega al mismo flujo
-   que la escritura manual del cÃ³digo. */
+   que la escritura manual del código. */
 async function dlgEscanear() {
   const r = rondaActiva();
   if (!r) return;
@@ -2184,8 +2419,8 @@ async function dlgEscanear() {
 
   abrirDlg('<div class="dlg-hd"><h3>Escanear punto</h3></div>' +
     '<div class="dlg-bd"><div class="lector"><video id="qrVideo" playsinline muted></video>' +
-      '<div class="mira"></div><div class="lector-msg" id="qrMsg">Pidiendo acceso a la cÃ¡maraâ€¦</div></div>' +
-      '<p class="hint" style="margin:0">Apunta al cÃ³digo pegado en el punto. Se registra solo al reconocerlo.</p></div>' +
+      '<div class="mira"></div><div class="lector-msg" id="qrMsg">Pidiendo acceso a la cámara…</div></div>' +
+      '<p class="hint" style="margin:0">Apunta al código pegado en el punto. Se registra solo al reconocerlo.</p></div>' +
     '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button></div>');
 
   dlg.addEventListener("close", cerrar, { once: true });
@@ -2199,14 +2434,14 @@ async function dlgEscanear() {
     await video.play();
   } catch (e) {
     msg.textContent = e && e.name === "NotAllowedError"
-      ? "Permiso de cÃ¡mara denegado. Puedes escribir el cÃ³digo a mano."
-      : "No se pudo abrir la cÃ¡mara. Puedes escribir el cÃ³digo a mano.";
+      ? "Permiso de cámara denegado. Puedes escribir el código a mano."
+      : "No se pudo abrir la cámara. Puedes escribir el código a mano.";
     return;
   }
   try { motor = await motorQR(); }
-  catch (e) { msg.textContent = "El lector no estÃ¡ disponible en este equipo. Escribe el cÃ³digo a mano."; return; }
+  catch (e) { msg.textContent = "El lector no está disponible en este equipo. Escribe el código a mano."; return; }
 
-  msg.textContent = "Buscando cÃ³digoâ€¦";
+  msg.textContent = "Buscando código…";
   const pts = puntosDeRuta(byId(state.rutas, r.rutaId));
 
   (async function bucle() {
@@ -2222,7 +2457,7 @@ async function dlgEscanear() {
           if (inp) { inp.value = cod; registrarPorCodigo(); }
           return;
         }
-        msg.textContent = "CÃ³digo Â« " + cod + " Â» no pertenece a esta ruta.";
+        msg.textContent = "Código « " + cod + " » no pertenece a esta ruta.";
       }
       await new Promise(res => setTimeout(res, 220));
     }
@@ -2232,7 +2467,7 @@ async function dlgEscanear() {
 /* ---------- visor de fotos ---------- */
 async function verFoto(id, pie) {
   const f = await fotoLeer(id);
-  if (!f) { avisar("La foto ya no estÃ¡ en este equipo.", "bad"); return; }
+  if (!f) { avisar("La foto ya no está en este equipo.", "bad"); return; }
   /* URL propia, fuera del pool de miniaturas: un repintado no debe romper el visor. */
   const url = URL.createObjectURL(f.blob);
   const cap = document.createElement("div");
@@ -2242,7 +2477,7 @@ async function verFoto(id, pie) {
     '<img src="' + url + '" alt="Foto del punto de control">' +
     '<div class="visor-ft"><button class="btn btn-sm" data-compartir>Compartir</button>' +
       '<button class="btn btn-sm" data-bajar>Descargar</button>' +
-      '<span style="color:#9AA7B4">' + Math.round(f.blob.size / 1024) + " KB Â· " + (f.fecha ? fmtFC(f.fecha) + " " + fmtHora(f.fecha) : "") + "</span></div>";
+      '<span style="color:#9AA7B4">' + Math.round(f.blob.size / 1024) + " KB · " + (f.fecha ? fmtFC(f.fecha) + " " + fmtHora(f.fecha) : "") + "</span></div>";
   document.body.appendChild(cap);
   const quitar = () => { cap.remove(); try { URL.revokeObjectURL(url); } catch (e) {} };
   cap.querySelector("[data-x]").onclick = quitar;
@@ -2253,7 +2488,7 @@ async function verFoto(id, pie) {
     const file = new File([f.blob], nombre, { type: "image/jpeg" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try { await navigator.share({ files: [file], title: pie || "Novedad de ronda", text: pie || "" }); }
-      catch (e) { /* el usuario cancelÃ³ */ }
+      catch (e) { /* el usuario canceló */ }
     } else {
       avisar("Este equipo no permite compartir archivos. Usa Descargar.", "bad");
     }
@@ -2261,7 +2496,7 @@ async function verFoto(id, pie) {
   cap.querySelector("[data-bajar]").onclick = async () => {
     const b64 = await blobABase64(f.blob);
     const bin = base64ABlob(b64, "image/jpeg");
-    if (window.claude) { avisar("La descarga no estÃ¡ disponible en esta vista.", "bad"); return; }
+    if (window.claude) { avisar("La descarga no está disponible en esta vista.", "bad"); return; }
     const u = URL.createObjectURL(bin);
     const a = document.createElement("a");
     a.href = u; a.download = nombre;
@@ -2279,23 +2514,23 @@ function dlgMarcar(ronda, ruta, punto, metodo) {
         ' <span class="pt-code">' + esc(punto.codigo) + "</span></div>" +
         '<div class="hint">' + esc(punto.zona) + " &middot; programado en el minuto " + punto.minuto + " de la ronda</div></div>" +
       (manual ? '<p class="hint" style="margin:0;padding:10px 12px;background:var(--warn-bg);border-radius:var(--r-sm);color:var(--warn)">' +
-        "Se registrarÃ¡ como <b>marca manual</b>: queda marcada en la bitÃ¡cora porque no se leyÃ³ el cÃ³digo del punto. Indica el motivo.</p>" : "") +
+        "Se registrará como <b>marca manual</b>: queda marcada en la bitácora porque no se leyó el código del punto. Indica el motivo.</p>" : "") +
       '<div><div class="eyebrow" style="margin-bottom:6px">Estado del punto</div><div class="seg" id="segNov">' +
         '<button type="button" data-nov="0" aria-pressed="true">Sin novedad</button>' +
         '<button type="button" class="nov" data-nov="1" aria-pressed="false">Con novedad</button></div></div>' +
-      '<label class="f">ObservaciÃ³n' + (manual ? " (obligatoria)" : "") +
-        '<textarea id="mNota" placeholder="' + (manual ? "Motivo de la marca manual" : "Opcional: quÃ© se observÃ³ en el punto") + '"></textarea></label>' +
+      '<label class="f">Observación' + (manual ? " (obligatoria)" : "") +
+        '<textarea id="mNota" placeholder="' + (manual ? "Motivo de la marca manual" : "Opcional: qué se observó en el punto") + '"></textarea></label>' +
       '<div><div class="eyebrow" style="margin-bottom:6px">Fotos <span id="fotoCnt"></span></div>' +
         '<div class="fotos" id="fotoLista"></div>' +
         '<button class="btn btn-sm" id="btnFoto" style="margin-top:8px">Tomar foto</button>' +
         '<input type="file" id="fotoIn" accept="image/*" capture="environment" multiple hidden></div>' +
-      '<div><button class="btn btn-sm" id="btnGps">Adjuntar ubicaciÃ³n</button> <span class="hint" id="gpsTxt">Sin ubicaciÃ³n</span></div>' +
+      '<div><button class="btn btn-sm" id="btnGps">Adjuntar ubicación</button> <span class="hint" id="gpsTxt">Sin ubicación</span></div>' +
     "</div>" +
     '<div class="dlg-ft"><button class="btn" data-cerrar>Cancelar</button>' +
       '<button class="btn btn-hv" id="btnOk">Registrar marca</button></div>');
 
   let novedad = false, geo = null;
-  const pendientes = [];               /* {id, blob} aÃºn no confirmadas */
+  const pendientes = [];               /* {id, blob} aún no confirmadas */
   const MAX_FOTOS = 3;
 
   $$("#segNov button").forEach(b => b.onclick = () => {
@@ -2326,7 +2561,7 @@ function dlgMarcar(ronda, ruta, punto, metodo) {
     const files = Array.from(e.target.files || []);
     e.target.value = "";
     for (const f of files) {
-      if (pendientes.length >= MAX_FOTOS) { avisar("MÃ¡ximo " + MAX_FOTOS + " fotos por punto.", "bad"); break; }
+      if (pendientes.length >= MAX_FOTOS) { avisar("Máximo " + MAX_FOTOS + " fotos por punto.", "bad"); break; }
       try {
         const blob = await comprimirFoto(f);
         pendientes.push({ id: uid("f"), blob, url: URL.createObjectURL(blob) });
@@ -2337,7 +2572,7 @@ function dlgMarcar(ronda, ruta, punto, metodo) {
 
   $("#btnGps").onclick = async () => {
     const t = $("#gpsTxt");
-    t.textContent = "Obteniendo ubicaciÃ³nâ€¦";
+    t.textContent = "Obteniendo ubicación…";
     try { geo = await ubicar(); t.textContent = geoTxt(geo); }
     catch (err) { geo = null; t.textContent = err.message; }
   };
@@ -2353,7 +2588,7 @@ function dlgMarcar(ronda, ruta, punto, metodo) {
         await fotoGuardar(f.id, f.blob, { fecha: new Date().toISOString(), rondaId: ronda.id, puntoId: punto.puntoId, codigo: punto.codigo });
         ids.push(f.id);
       } catch (err) {
-        avisar("No se pudo guardar una foto: el almacenamiento del equipo estÃ¡ lleno.", "bad");
+        avisar("No se pudo guardar una foto: el almacenamiento del equipo está lleno.", "bad");
       }
       try { URL.revokeObjectURL(f.url); } catch (e) {}
     }
@@ -2372,10 +2607,10 @@ function dlgFinalizar(r) {
       '<span class="mono">' + fmtHora(r.inicio) + "</span>.</p>" +
       (faltan.length
         ? '<div style="padding:12px;background:var(--bad-bg);color:var(--bad);border-radius:var(--r-sm)">' +
-          "<b>" + faltan.length + (faltan.length === 1 ? " punto quedarÃ¡ como omitido" : " puntos quedarÃ¡n como omitidos") + ":</b><br>" +
+          "<b>" + faltan.length + (faltan.length === 1 ? " punto quedará como omitido" : " puntos quedarán como omitidos") + ":</b><br>" +
           faltan.map(p => esc(p.codigo) + " " + esc(p.nombre)).join("<br>") + "</div>"
         : '<div style="padding:12px;background:var(--ok-bg);color:var(--ok);border-radius:var(--r-sm)"><b>Recorrido completo:</b> los ' + pts.length + " puntos fueron marcados.</div>") +
-      '<label class="f">ObservaciÃ³n de cierre<textarea id="fNota" placeholder="Novedades del turno, entrega a relevo, etc."></textarea></label>' +
+      '<label class="f">Observación de cierre<textarea id="fNota" placeholder="Novedades del turno, entrega a relevo, etc."></textarea></label>' +
     "</div>" +
     '<div class="dlg-ft"><button class="btn" data-cerrar>Volver</button>' +
       '<button class="btn btn-navy" id="btnCerrar">Cerrar ronda</button></div>');
@@ -2384,29 +2619,29 @@ function dlgFinalizar(r) {
     const nr = Object.assign({}, r, { estado: "finalizada", fin: new Date().toISOString(), observacion: obs });
     guardar("rondas", nr);
     dlg.close();
-    avisar("Ronda cerrada" + (faltan.length ? " con " + faltan.length + " omisiÃ³n(es)." : " sin omisiones."), faltan.length ? "bad" : "");
+    avisar("Ronda cerrada" + (faltan.length ? " con " + faltan.length + " omisión(es)." : " sin omisiones."), faltan.length ? "bad" : "");
   };
 }
 
 function dlgInstalacion(i) {
   const n = !i;
-  abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nueva instalaciÃ³n" : "Editar instalaciÃ³n") + "</h3></div>" +
+  abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nueva instalación" : "Editar instalación") + "</h3></div>" +
     '<div class="dlg-bd">' +
-      '<label class="f">Nombre de la instalaciÃ³n<input id="iN" value="' + esc(i ? i.nombre : "") + '" placeholder="Planta San Bernardo"></label>' +
+      '<label class="f">Nombre de la instalación<input id="iN" value="' + esc(i ? i.nombre : "") + '" placeholder="Planta San Bernardo"></label>' +
       '<label class="f">Cliente<input id="iC" value="' + esc(i ? i.cliente || "" : "") + '" placeholder="Alimentos del Maipo S.A."></label>' +
-      '<label class="f">DirecciÃ³n<input id="iD" value="' + esc(i ? i.direccion || "" : "") + '"></label>' +
+      '<label class="f">Dirección<input id="iD" value="' + esc(i ? i.direccion || "" : "") + '"></label>' +
       '<label class="f chk" style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">' +
-        '<input type="checkbox" id="iA"' + (!i || i.activa !== false ? " checked" : "") + "> InstalaciÃ³n activa</label>" +
+        '<input type="checkbox" id="iA"' + (!i || i.activa !== false ? " checked" : "") + "> Instalación activa</label>" +
     "</div>" +
     '<div class="dlg-ft">' + (n ? "" : '<button class="btn btn-danger" id="btnDel" style="margin-right:auto">Eliminar</button>') +
       '<button class="btn" data-cerrar>Cancelar</button><button class="btn btn-navy" id="btnOk">Guardar</button></div>');
   $("#btnOk").onclick = async () => {
     const nom = $("#iN").value.trim();
-    if (!nom) { avisar("El nombre de la instalaciÃ³n es obligatorio.", "bad"); return; }
+    if (!nom) { avisar("El nombre de la instalación es obligatorio.", "bad"); return; }
     const nueva = { id: i ? i.id : uid("ins"), nombre: nom, cliente: $("#iC").value.trim(),
                     direccion: $("#iD").value.trim(), activa: $("#iA").checked };
     await guardar("instalaciones", nueva);
-    if (!i) { state.instalacionId = nueva.id; avisar("InstalaciÃ³n creada y seleccionada.", "hv"); }
+    if (!i) { state.instalacionId = nueva.id; avisar("Instalación creada y seleccionada.", "hv"); }
     dlg.close();
     render();
   };
@@ -2414,11 +2649,11 @@ function dlgInstalacion(i) {
   if (d) d.onclick = () => {
     const np = state.puntos.filter(p => p.instalacionId === i.id).length;
     const nr = state.rondas.filter(r => r.instalacionId === i.id).length;
-    if (np || nr) { avisar("No se puede eliminar: tiene " + np + " puntos y " + nr + " rondas. MÃ¡rcala como inactiva.", "bad"); return; }
+    if (np || nr) { avisar("No se puede eliminar: tiene " + np + " puntos y " + nr + " rondas. Márcala como inactiva.", "bad"); return; }
     borrar("instalaciones", i.id);
     if (state.instalacionId === i.id) state.instalacionId = "";
     dlg.close();
-    avisar("InstalaciÃ³n eliminada.");
+    avisar("Instalación eliminada.");
   };
 }
 
@@ -2427,9 +2662,11 @@ function dlgUsuario(u) {
   const yo = state.sesion && u && u.id === state.sesion.id;
   const insts = state.instalaciones.filter(i => i.activa !== false);
   const sel = u ? (u.instalaciones || []) : (instalacionEfectiva() ? [instalacionEfectiva()] : []);
-  const roles = [["guardia", "Guardia â€” marca puntos en su ronda"],
-                 ["cliente", "Cliente â€” sÃ³lo consulta su instalaciÃ³n"],
-                 ["admin", "Administrador â€” acceso completo"]];
+  const roles = [["guardia", "Guardia — marca puntos en su ronda"],
+                 ["cliente", "Cliente — sólo consulta su instalación"],
+                 ["admin", "Administrador — acceso completo"]];
+  /* En el servidor las cuentas nacen pendientes: hay que poder verlo y revocarlo. */
+  if (modoServidor()) roles.unshift(["pendiente", "Pendiente — no ve nada todavía"]);
 
   abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nuevo usuario" : "Editar usuario") + "</h3></div>" +
     '<div class="dlg-bd">' +
@@ -2442,13 +2679,15 @@ function dlgUsuario(u) {
           '<label class="pick" style="cursor:pointer"><input type="checkbox" data-ui="' + i.id + '"' +
           (sel.includes(i.id) ? " checked" : "") + '><span class="nm">' + esc(i.nombre) +
           "<small>" + esc(i.cliente || "sin cliente") + "</small></span></label>").join("") + "</div>"
-          : '<p class="hint">Primero crea una instalaciÃ³n.</p>') + "</div>" +
-      '<label class="f">' + (n ? "Clave" : "Clave nueva (dÃ©jala vacÃ­a para no cambiarla)") +
-        '<input id="uC" type="password" autocomplete="new-password"></label>' +
+          : '<p class="hint">Primero crea una instalación.</p>') + "</div>" +
+      (modoServidor()
+        ? '<p class="hint" style="margin:0">La clave la elige cada persona al crear su cuenta; desde aquí no se ve ni se cambia.</p>'
+        : '<label class="f">' + (n ? "Clave" : "Clave nueva (déjala vacía para no cambiarla)") +
+          '<input id="uC" type="password" autocomplete="new-password"></label>') +
       '<label class="f chk" style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">' +
         '<input type="checkbox" id="uA"' + (!u || u.activo !== false ? " checked" : "") + (yo ? " disabled" : "") + "> Cuenta habilitada</label>" +
     "</div>" +
-    '<div class="dlg-ft">' + (n || yo ? "" : '<button class="btn btn-danger" id="btnDel" style="margin-right:auto">Eliminar</button>') +
+    '<div class="dlg-ft">' + (n || yo || modoServidor() ? "" : '<button class="btn btn-danger" id="btnDel" style="margin-right:auto">Eliminar</button>') +
       '<button class="btn" data-cerrar>Cancelar</button><button class="btn btn-navy" id="btnOk">Guardar</button></div>');
 
   const pintarInsts = () => { $("#uInsts").style.display = $("#uR").value === "admin" ? "none" : ""; };
@@ -2458,16 +2697,28 @@ function dlgUsuario(u) {
   $("#btnOk").onclick = async () => {
     const nombre = $("#uN").value.trim();
     const usuario = $("#uU").value.trim();
-    const clave = $("#uC").value;
+    const clave = $("#uC") ? $("#uC").value : "";
     const rolSel = $("#uR").value;
     if (!nombre || !usuario) { avisar("El nombre y el usuario son obligatorios.", "bad"); return; }
     const choca = state.usuarios.find(x => normUsuario(x.usuario) === normUsuario(usuario) && (!u || x.id !== u.id));
-    if (choca) { avisar("Ya existe un usuario Â« " + usuario + " Â».", "bad"); return; }
+    if (choca) { avisar("Ya existe un usuario « " + usuario + " ».", "bad"); return; }
     if (n && clave.length < 4) { avisar("La clave debe tener al menos 4 caracteres.", "bad"); return; }
     if (!n && clave && clave.length < 4) { avisar("La clave nueva debe tener al menos 4 caracteres.", "bad"); return; }
 
     const elegidas = $$("[data-ui]", dlg).filter(c => c.checked).map(c => c.dataset.ui);
-    if (rolSel !== "admin" && !elegidas.length) { avisar("Asigna al menos una instalaciÃ³n.", "bad"); return; }
+    if (rolSel !== "admin" && !elegidas.length) { avisar("Asigna al menos una instalación.", "bad"); return; }
+
+    /* En el servidor el guardia ES el perfil: no hay ficha aparte que crear. */
+    if (modoServidor()) {
+      await guardar("usuarios", Object.assign({}, u, {
+        nombre, usuario, rol: rolSel,
+        instalaciones: rolSel === "admin" ? [] : elegidas,
+        activo: yo ? true : $("#uA").checked
+      }));
+      dlg.close();
+      avisar("Usuario actualizado.", "hv");
+      return;
+    }
 
     let guardiaId = u ? u.guardiaId || "" : "";
     if (rolSel === "guardia" && !guardiaId) {
@@ -2500,7 +2751,7 @@ function dlgUsuario(u) {
   const d = $("#btnDel");
   if (d) d.onclick = () => {
     if (u.rol === "admin" && state.usuarios.filter(x => x.rol === "admin" && x.activo !== false).length <= 1) {
-      avisar("No puedes eliminar al Ãºnico administrador.", "bad");
+      avisar("No puedes eliminar al único administrador.", "bad");
       return;
     }
     borrar("usuarios", u.id);
@@ -2513,9 +2764,9 @@ function dlgPunto(p) {
   const n = !p;
   abrirDlg('<div class="dlg-hd"><h3>' + (n ? "Nuevo punto" : "Editar punto") + "</h3></div>" +
     '<div class="dlg-bd">' +
-      '<label class="f">CÃ³digo del tag<input id="pC" value="' + esc(p ? p.codigo : "") + '" placeholder="PC-09" class="mono"></label>' +
+      '<label class="f">Código del tag<input id="pC" value="' + esc(p ? p.codigo : "") + '" placeholder="PC-09" class="mono"></label>' +
       '<label class="f">Nombre<input id="pN" value="' + esc(p ? p.nombre : "") + '" placeholder="Cerco oriente"></label>' +
-      '<label class="f">Zona<input id="pZ" value="' + esc(p ? p.zona : "") + '" placeholder="PerÃ­metro"></label>' +
+      '<label class="f">Zona<input id="pZ" value="' + esc(p ? p.zona : "") + '" placeholder="Perímetro"></label>' +
       '<label class="f chk" style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">' +
         '<input type="checkbox" id="pA"' + (!p || p.activo ? " checked" : "") + "> Punto activo</label>" +
     "</div>" +
@@ -2523,9 +2774,9 @@ function dlgPunto(p) {
       '<button class="btn" data-cerrar>Cancelar</button><button class="btn btn-navy" id="btnOk">Guardar</button></div>');
   $("#btnOk").onclick = () => {
     const cod = $("#pC").value.trim().toUpperCase(), nom = $("#pN").value.trim();
-    if (!cod || !nom) { avisar("El cÃ³digo y el nombre son obligatorios.", "bad"); return; }
+    if (!cod || !nom) { avisar("El código y el nombre son obligatorios.", "bad"); return; }
     const dup = puntosVis().find(x => x.codigo.toUpperCase() === cod && (!p || x.id !== p.id));
-    if (dup) { avisar("Ya existe un punto con el cÃ³digo " + cod + ".", "bad"); return; }
+    if (dup) { avisar("Ya existe un punto con el código " + cod + ".", "bad"); return; }
     guardar("puntos", { id: p ? p.id : uid("p"), instalacionId: p ? p.instalacionId : instalacionEfectiva(),
       codigo: cod, nombre: nom, zona: $("#pZ").value.trim() || "General", activo: $("#pA").checked });
     dlg.close();
@@ -2540,7 +2791,7 @@ function dlgGuardia(g) {
     '<div class="dlg-bd">' +
       '<label class="f">Nombre completo<input id="gN" value="' + esc(g ? g.nombre : "") + '"></label>' +
       '<label class="f">Documento de identidad<input id="gR" value="' + esc(g ? g.rut : "") + '" class="mono"></label>' +
-      '<label class="f">Turno<select id="gT">' + ["DÃ­a", "Tarde", "Noche"].map(t =>
+      '<label class="f">Turno<select id="gT">' + ["Día", "Tarde", "Noche"].map(t =>
         '<option' + (g && g.turno === t ? " selected" : "") + ">" + t + "</option>").join("") + "</select></label>" +
       '<label class="f chk" style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)">' +
         '<input type="checkbox" id="gA"' + (!g || g.activo ? " checked" : "") + "> En servicio</label>" +
@@ -2563,7 +2814,7 @@ function dlgGuardia(g) {
 function dlgRuta(r) {
   const n = !r;
   /* Un recorrido es una lista ordenada de tramos: el mismo punto puede repetirse
-     (por ejemplo, salir y volver a porterÃ­a), asÃ­ que se edita por tramo, no por punto. */
+     (por ejemplo, salir y volver a portería), así que se edita por tramo, no por punto. */
   const tramos = (r ? r.puntos || [] : []).map(x => ({ puntoId: x.puntoId, minuto: x.minuto }));
   if (!tramos.length && puntosVis().length) tramos.push({ puntoId: puntosVis()[0].id, minuto: 0 });
 
@@ -2627,9 +2878,9 @@ function dlgRuta(r) {
 
 /* ---------------- acciones ---------------- */
 function iniciarRonda(guardiaId, rutaId) {
-  if (rondaActiva()) { avisar("Ya hay una ronda en curso. CiÃ©rrala antes de iniciar otra.", "bad"); return; }
+  if (rondaActiva()) { avisar("Ya hay una ronda en curso. Ciérrala antes de iniciar otra.", "bad"); return; }
   const g = byId(state.guardias, guardiaId), rt = byId(state.rutas, rutaId);
-  if (!g || !rt) { avisar("Selecciona un guardia y una ruta vÃ¡lidos.", "bad"); return; }
+  if (!g || !rt) { avisar("Selecciona un guardia y una ruta válidos.", "bad"); return; }
   guardar("rondas", { id: uid("rd"), instalacionId: rt.instalacionId || instalacionEfectiva(),
     rutaId, guardiaId, rutaNombre: rt.nombre, guardiaNombre: g.nombre,
     inicio: new Date().toISOString(), fin: null, estado: "en_curso", totalPuntos: (rt.puntos || []).length,
@@ -2649,7 +2900,7 @@ function registrarPorCodigo() {
 
   if (!pend.length) {
     const enRuta = pts.some(p => p.codigo.toUpperCase() === cod);
-    avisar(enRuta ? "El punto " + cod + " ya fue marcado en esta ronda." : "El cÃ³digo " + cod + " no pertenece a esta ruta.", "bad");
+    avisar(enRuta ? "El punto " + cod + " ya fue marcado en esta ronda." : "El código " + cod + " no pertenece a esta ruta.", "bad");
     inp.select();
     return;
   }
@@ -2668,7 +2919,7 @@ function registrarPorCodigo() {
 function registrarMarca(ronda, ruta, punto, opts) {
   const actual = byId(state.rondas, ronda.id) || ronda;
   if (actual.estado !== "en_curso") { avisar("La ronda ya fue cerrada.", "bad"); return; }
-  if (marcaEnIdx(actual, punto.idx)) { avisar("Ese punto ya estÃ¡ marcado.", "bad"); return; }
+  if (marcaEnIdx(actual, punto.idx)) { avisar("Ese punto ya está marcado.", "bad"); return; }
   const hora = new Date().toISOString();
   const tol = ruta ? (ruta.toleranciaMin || 5) : 5;
   const ev = estadoMarca(actual, punto.minuto, hora, tol);
@@ -2679,11 +2930,11 @@ function registrarMarca(ronda, ruta, punto, opts) {
   const nr = Object.assign({}, actual, { marcas: marcasDe(actual).concat([marca]) });
   guardar("rondas", nr);
   const et = (ESTADOS[ev.estado] || {}).txt || ev.estado;
-  avisar(punto.codigo + " registrado a las " + fmtHora(hora) + " â€” " + et + (opts.novedad ? " con novedad" : "") + ".", opts.novedad ? "bad" : "hv");
+  avisar(punto.codigo + " registrado a las " + fmtHora(hora) + " — " + et + (opts.novedad ? " con novedad" : "") + ".", opts.novedad ? "bad" : "hv");
   const inp = $("#codigoIn"); if (inp) inp.focus();
 }
 
-/* ---------------- navegaciÃ³n y reloj ---------------- */
+/* ---------------- navegación y reloj ---------------- */
 $$(".tab").forEach(t => t.onclick = () => {
   state.vista = t.id.replace("tab-", "");
   $$(".tab").forEach(x => x.setAttribute("aria-selected", String(x === t)));
@@ -2699,12 +2950,12 @@ function reloj() {
 reloj();
 setInterval(reloj, 1000);
 
-/* ---------------- instalable en el telÃ©fono ----------------
-   SÃ³lo fuera de Claude: alojada en un sitio propio, la pÃ¡gina se instala
-   en la pantalla de inicio de Android e iOS y funciona sin seÃ±al. */
+/* ---------------- instalable en el teléfono ----------------
+   Sólo fuera de Claude: alojada en un sitio propio, la página se instala
+   en la pantalla de inicio de Android e iOS y funciona sin señal. */
 let promptInstalar = null;
 if (!window.claude) {
-  /* El paquete web ya trae estas etiquetas en el <head>; esto sÃ³lo cubre
+  /* El paquete web ya trae estas etiquetas en el <head>; esto sólo cubre
      el archivo suelto, sin duplicar nada. */
   const cab = document.head;
   const poner = (sel, crear) => { if (!cab.querySelector(sel)) cab.appendChild(crear()); };
@@ -2712,7 +2963,7 @@ if (!window.claude) {
   poner('meta[name="theme-color"]', () => { const e = document.createElement("meta"); e.name = "theme-color"; e.content = "#1B2E45"; return e; });
   poner('link[rel="apple-touch-icon"]', () => { const e = document.createElement("link"); e.rel = "apple-touch-icon"; e.href = "apple-touch-icon.png"; return e; });
   poner('meta[name="apple-mobile-web-app-capable"]', () => { const e = document.createElement("meta"); e.name = "apple-mobile-web-app-capable"; e.content = "yes"; return e; });
-  poner('meta[name="apple-mobile-web-app-title"]', () => { const e = document.createElement("meta"); e.name = "apple-mobile-web-app-title"; e.content = "Ronda VigÃ­a"; return e; });
+  poner('meta[name="apple-mobile-web-app-title"]', () => { const e = document.createElement("meta"); e.name = "apple-mobile-web-app-title"; e.content = "Ronda Vigía"; return e; });
 
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
@@ -2737,6 +2988,22 @@ async function arrancar() {
   marcarLink();
   state.resuelto = false;
   render();
+
+  /* Si este equipo está conectado a un servidor, manda el servidor. */
+  if (srvConfig()) {
+    try {
+      const sb = await srvCliente();
+      const { data } = await sb.auth.getSession();
+      if (data && data.session) {
+        await srvIniciarModo(data.session.user);
+        return;
+      }
+    } catch (e) { /* sin sesión válida: se pide acceso */ }
+    state.resuelto = true;
+    render();
+    return;
+  }
+
   await conectar();
   await migrar();
   if (!state.instalacionId) {
