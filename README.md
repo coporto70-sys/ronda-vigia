@@ -8,11 +8,18 @@ el teléfono desde el navegador y funciona sin señal.
 
 ## Qué hace
 
-- **Ronda** — el guardia inicia el recorrido y marca cada punto escribiendo el
-  código del tag. La app valida que el código pertenezca a la ruta, que no esté
-  ya marcado y, si la ruta lo exige, que se respete el orden. Cada marca queda
-  con hora y desfase contra el minuto programado: *a tiempo*, *anticipado* o
-  *retrasado*. Admite reportar novedad con observación y adjuntar ubicación.
+- **Ronda** — el guardia inicia el recorrido y marca cada punto **escaneando su
+  código QR** o escribiendo el código a mano. La app valida que el código
+  pertenezca a la ruta, que no esté ya marcado y, si la ruta lo exige, que se
+  respete el orden. Cada marca queda con hora y desfase contra el minuto
+  programado: *a tiempo*, *anticipado* o *retrasado*.
+- **Fotos** — hasta tres por punto, tomadas con la cámara. Se comprimen a
+  ~1024 px antes de guardarse (una foto de 2 MB queda en unos 60 KB) y viven en
+  IndexedDB, no en `localStorage`. Se ven en la bitácora y se pueden compartir.
+- **Ubicación** — coordenadas con su precisión en metros y enlace al mapa.
+  Van también en el CSV, en columnas separadas de latitud y longitud.
+- **Etiquetas QR** — genera e imprime una etiqueta por punto de control, con su
+  código, nombre y zona, para plastificar y pegar en terreno.
 - **Marca manual** — si el tag no responde, se registra igual pero exige
   justificación y queda señalada como manual en la bitácora.
 - **Bitácora** — todas las marcas, filtrables por período, guardia y ruta. Los
@@ -26,9 +33,11 @@ el teléfono desde el navegador y funciona sin señal.
 
 ## Dónde quedan los datos
 
-En el navegador de cada equipo (`localStorage`). Los dispositivos **no**
-comparten información entre sí. Usa Configuración → Respaldo con regularidad:
-si se borran los datos del sitio, la bitácora de ese equipo se pierde.
+En el navegador de cada equipo: los registros en `localStorage` y las fotos en
+IndexedDB. Los dispositivos **no** comparten información entre sí, y las fotos
+tomadas en un teléfono no viajan solas a ningún otro. Usa Configuración →
+Respaldo con regularidad: si se borran los datos del sitio, la bitácora y las
+fotos de ese equipo se pierden.
 
 Para que varios equipos compartan la misma bitácora en vivo hace falta un
 servidor con base de datos, que es un paso aparte.
